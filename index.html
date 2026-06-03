@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create PT AP SHOW</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f8f9fa;
+            padding: 2rem 0;
+        }
+        
+        .header {
+            background: white;
+            border-bottom: 4px solid #0d6efd;
+            margin-bottom: 2rem;
+            padding: 2rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .game-card {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            text-decoration: none;
+            color: #212529;
+            height: 100%;
+            border: 1px solid #dee2e6;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border-color: #0d6efd;
+        }
+        
+        .card-icon {
+            font-size: 2rem;
+            text-align: center;
+            margin: 1rem 0;
+            color: #6c757d;
+        }
+        
+        .folder-path {
+            font-family: 'Courier New', monospace;
+            font-size: 0.7rem;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .rating-box {
+            background: #e9ecef;
+            border-left: 4px solid #0d6efd;
+            margin-bottom: 2rem;
+        }
+        
+        .footer {
+            margin-top: 3rem;
+            padding: 1.5rem 0;
+            background: white;
+            border-top: 1px solid #dee2e6;
+            color: #6c757d;
+        }
+        
+        .game-count-badge {
+            background: #0d6efd;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+
+
+<div class="container">
+    <!-- Rating Alert -->
+    <div class="alert rating-box d-flex align-items-center justify-content-between">
+        <div>
+            <strong>Rate Honestly:</strong> After playing each game, click the button to submit your feedback.
+        </div>
+        <a href="#" id="ratingFormLink" class="btn btn-primary btn-sm" target="_blank">Open Rating Form</a>
+    </div>
+
+    <!-- Game Count -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="text-secondary">Submitted Games</h5>
+        <span class="game-count-badge" id="gameCount">0</span>
+    </div>
+
+    <!-- Game Grid -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="gameGrid">
+        <div class="col">
+            <div class="alert alert-info text-center">Loading games...</div>
+        </div>
+    </div>
+</div>
+
+<div class="footer text-center mt-5">
+    <div class="container">
+        <p class="mb-0">Play - Rate  - Be kind  - Thank you</p>
+    </div>
+</div>
+
+<script>
+    // ========================================
+    // UPDATE THIS with your Google Form link
+    // ========================================
+    const RATING_FORM_URL = "https://forms.gle/LVNhfPmGZnFFQr3CA";
+    
+    // Update rating button link
+    const ratingBtn = document.getElementById('ratingFormLink');
+    if (ratingBtn && RATING_FORM_URL !== "https://forms.gle/LVNhfPmGZnFFQr3CA") {
+        ratingBtn.href = RATING_FORM_URL;
+    } else if (ratingBtn) {
+        ratingBtn.onclick = function(e) {
+            e.preventDefault();
+            alert("Ms Orsun will provide the rating form link in class.");
+            return false;
+        };
+    }
+
+    // ========================================
+    // YOUR GAMES - Add or remove folders here
+    // ========================================
+    let gameFolders = [
+         { name: "Dolphin Pop", folder: "DolphinPop", rated: false},
+         { name: "Maze Run", folder: "MazeGame", rated: false},
+         { name: "Human Benchmark", folder: "HumanBenchmark", rated: false },
+           { name: "Doodle Jump", folder: "DoodleJump",rated: false },
+            { name: "Cannon BBall", folder: "CannonBall", rated: false },
+               { name: "Ravenous Randy", folder: "RavenousRandy", rated: false },
+        { name: "Super Striker", folder: "SuperStriker", rated: false },
+          { name: "Marathon Race", folder: "MarathonRace", rated: false},
+            { name: "Brick Game", folder: "BrickGame", rated:true},  
+         { name: "Block Break", folder: "BlockBreak" , rated: true},
+        { name: "PokeBerryCatcher", folder: "PokeBerryCatcher", rated:true  },
+        { name: "JellyFish", folder: "JellyFish", rated: true },
+        { name: "MusicNotes", folder: "MusicNotes", rated: true },
+        { name: "ZombieRun", folder: "ZombieRun", rated: true },
+        { name: "Charging Chaos", folder: "ChargingChaos", rated: true },
+        { name: "Yahtzee", folder: "Yahtzee", rated: true },
+        { name: "Surfing Game", folder: "SurfingGame", rated: true },
+        { name: "Santa Game", folder: "SantaGame", rated: true },
+        { name: "Mewtwo Survival", folder: "MewtwoSurvival", rated: true }
+      
+    ];
+    
+    // Display games
+    function displayGames() {
+        const gridContainer = document.getElementById('gameGrid');
+        const gameCountSpan = document.getElementById('gameCount');
+        
+        if (gameFolders.length === 0) {
+            gridContainer.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-warning text-center">
+                        No games found. Add folder names to the gameFolders array.
+                    </div>
+                </div>
+            `;
+            gameCountSpan.textContent = '0';
+            return;
+        }
+        
+        gameCountSpan.textContent = gameFolders.length;
+        
+    let html = '';
+for (let i = 0; i < gameFolders.length; i++) {
+    const game = gameFolders[i];
+    const cardStyle = game.rated
+        ? 'background-color: #d1e7dd; border-color: #198754;'
+        : 'background-color: #f8d7da; border-color: #dc3545;';
+    html += `
+        <div class="col">
+            <a href="${game.folder}/index.html" class="game-card card h-100 text-decoration-none" target="_blank" style="${cardStyle}">
+                <div class="card-body text-center">
+                    <div class="card-icon"> </div>
+                    <h6 class="card-title fw-bold text-dark mb-2">${escapeHtml(game.name)}</h6>
+                    <div class="folder-path">${game.folder}/</div>
+                </div>
+            </a>
+        </div>
+    `;
+}
+        gridContainer.innerHTML = html;
+    }
+    
+    // Helper to prevent XSS
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // Run when page loads
+    displayGames();
+</script>
+</body>
+</html>
