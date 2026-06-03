@@ -19,6 +19,18 @@
             padding: 2rem 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
+.card-icon {
+    text-align: center;
+    margin: 1rem 0;
+    color: #6c757d;
+}
+
+.card-icon img {
+    width: 100%;
+    height: 120px;
+    object-fit: contain;
+    border-radius: 8px;
+}
         
         .game-card {
             transition: all 0.2s ease-in-out;
@@ -35,12 +47,7 @@
             border-color: #0d6efd;
         }
         
-        .card-icon {
-            font-size: 2rem;
-            text-align: center;
-            margin: 1rem 0;
-            color: #6c757d;
-        }
+      
         
         .folder-path {
             font-family: 'Courier New', monospace;
@@ -134,13 +141,13 @@
          { name: "Dolphin Pop", folder: "DolphinPop", rated: false},
          { name: "Maze Run", folder: "MazeGame", rated: false},
          { name: "Human Benchmark", folder: "HumanBenchmark", rated: false },
-           { name: "Doodle Jump", folder: "DoodleJump",rated: false },
-            { name: "Cannon BBall", folder: "CannonBall", rated: false },
-               { name: "Ravenous Randy", folder: "RavenousRandy", rated: false },
+         { name: "Doodle Jump", folder: "DoodleJump",rated: false },
+        { name: "Cannon BBall", folder: "CannonBall", rated: false },
+        { name: "Ravenous Randy", folder: "RavenousRandy", rated: false },
         { name: "Super Striker", folder: "SuperStriker", rated: false },
-          { name: "Marathon Race", folder: "MarathonRace", rated: false},
-            { name: "Brick Game", folder: "BrickGame", rated:true},  
-         { name: "Block Break", folder: "BlockBreak" , rated: true},
+        { name: "Marathon Race", folder: "MarathonRace", rated: false},
+        { name: "Brick Game", folder: "BrickGame", rated:true},  
+        { name: "Block Break", folder: "BlockBreak" , rated: true},
         { name: "PokeBerryCatcher", folder: "PokeBerryCatcher", rated:true  },
         { name: "JellyFish", folder: "JellyFish", rated: true },
         { name: "MusicNotes", folder: "MusicNotes", rated: true },
@@ -182,7 +189,9 @@ for (let i = 0; i < gameFolders.length; i++) {
         <div class="col">
             <a href="${game.folder}/index.html" class="game-card card h-100 text-decoration-none" target="_blank" style="${cardStyle}">
                 <div class="card-body text-center">
-                    <div class="card-icon"> </div>
+                 <div class="card-icon">
+    <img src="${game.folder}/index.png" onerror="this.src='default.png'">
+</div>
                     <h6 class="card-title fw-bold text-dark mb-2">${escapeHtml(game.name)}</h6>
                     <div class="folder-path">${game.folder}/</div>
                 </div>
