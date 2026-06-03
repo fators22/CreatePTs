@@ -189,8 +189,8 @@ for (let i = 0; i < gameFolders.length; i++) {
         <div class="col">
             <a href="${game.folder}/index.html" class="game-card card h-100 text-decoration-none" target="_blank" style="${cardStyle}">
                 <div class="card-body text-center">
-                 <div class="card-icon">
-    <img src="${game.folder}/index.png" onerror="this.src='default.png'">
+<div class="card-icon">
+    <img src="${game.folder}/index.png" onerror="this.src='${game.folder}/index.gif'; this.onerror=null;">
 </div>
                     <h6 class="card-title fw-bold text-dark mb-2">${escapeHtml(game.name)}</h6>
                     <div class="folder-path">${game.folder}/</div>
