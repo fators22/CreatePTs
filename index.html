@@ -93,7 +93,7 @@
         <div>
             <strong>Rate Honestly:</strong> After playing each game, click the button to submit your feedback.
         </div>
-        <a href="#" id="ratingFormLink" class="btn btn-primary btn-sm" target="_blank">Open Rating Form</a>
+        <a href="https://forms.gle/45XNnFP8vguNWmQM9" id="ratingFormLink" class="btn btn-primary btn-sm" target="_blank">Open Rating Form</a>
     </div>
 
     <!-- Game Count -->
@@ -120,11 +120,11 @@
     // ========================================
     // UPDATE THIS with your Google Form link
     // ========================================
-    const RATING_FORM_URL = "https://forms.gle/LVNhfPmGZnFFQr3CA";
+    const RATING_FORM_URL = "https://forms.gle/45XNnFP8vguNWmQM9";
     
     // Update rating button link
     const ratingBtn = document.getElementById('ratingFormLink');
-    if (ratingBtn && RATING_FORM_URL !== "https://forms.gle/LVNhfPmGZnFFQr3CA") {
+    if (ratingBtn && RATING_FORM_URL !== "https://forms.gle/45XNnFP8vguNWmQM9") {
         ratingBtn.href = RATING_FORM_URL;
     } else if (ratingBtn) {
         ratingBtn.onclick = function(e) {
