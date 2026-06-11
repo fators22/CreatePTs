@@ -121,6 +121,9 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         .toast-msg.show { display: block; }
+        .error-msg {
+            background: #dc3545;
+        }
     </style>
 </head>
 <body>
@@ -181,10 +184,11 @@
 <div class="toast-msg" id="toast">✓ Rating saved!</div>
 
 <script>
-const SUPABASE_URL = 'https://ckvyqutltebnamvoyzrc.supabase.co/rest/v1/';
-const SUPABASE_KEY = 'sb_publishable_GiVb88ghATn8_0PLqEAasw_Vhf13eTD';
+// CORRECT Supabase configuration
+const SUPABASE_URL = 'https://ckvyqutltebnamvoyzrc.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_GiVb88ghATn8_0PLqEAasw_Vhf13eTD';
 
-// ===== THE CORRECT GAMES LIST (23 games with GitHub links) =====
+// Games list
 const games = [
     { name:"Pokemon Game",       folder:"Pokemon",         github:"https://makb0925.github.io/Pokemon_Game" },
     { name:"Stockle",            folder:"Stockle",         github:"https://sebbra26-creator.github.io/STOCKLE" },
@@ -210,7 +214,6 @@ const games = [
     { name:"Santa Game",         folder:"SantaGame",       github:"https://jamgil27-glitch.github.io/Santa-Game/" },
     { name:"Mewtwo Survival",    folder:"MewtwoSurvival",  github:"https://andrewhockey65-pixel.github.io/MewtwoSurvival/" }
 ];
-// =============================================================
 
 let activeGame = null;
 let currentStars = { fun:0, creativity:0, difficulty:0, polish:0 };
@@ -218,24 +221,38 @@ let avgCache = {};
 
 const headers = {
     'Content-Type': 'application/json',
-    'apikey': SUPABASE_KEY,
-    'Authorization': 'Bearer ' + SUPABASE_KEY
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
 };
 
+// Fetch ratings from Supabase
 async function fetchAverages() {
     try {
-        const res = await fetch(`${SUPABASE_URL}/ratings?select=gameFolder,fun,creativity,difficulty,polish`, { headers });
-        if (!res.ok) throw new Error('Fetch failed');
-        const rows = await res.json();
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/ratings?select=gameFolder,fun,creativity,difficulty,polish`, {
+            method: 'GET',
+            headers: headers
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const rows = await response.json();
         avgCache = {};
+        
         rows.forEach(r => {
-            if (!avgCache[r.gameFolder]) avgCache[r.gameFolder] = { sum:0, count:0 };
+            if (!avgCache[r.gameFolder]) {
+                avgCache[r.gameFolder] = { sum: 0, count: 0 };
+            }
             const avg = (r.fun + r.creativity + r.difficulty + r.polish) / 4;
             avgCache[r.gameFolder].sum += avg;
             avgCache[r.gameFolder].count += 1;
         });
+        
+        console.log('Averages loaded:', avgCache);
     } catch(e) {
-        console.warn('Could not fetch averages:', e);
+        console.error('Error fetching averages:', e);
+        avgCache = {};
     }
 }
 
@@ -246,6 +263,7 @@ function getAvg(folder) {
 }
 
 function escapeHtml(str) {
+    if (!str) return '';
     return str.replace(/[&<>"']/g, m =>
         ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])
     );
@@ -288,11 +306,21 @@ function openModal(idx) {
     document.getElementById('modalGameName').textContent = activeGame.name;
     document.getElementById('commentBox').value = '';
     document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitBtn').textContent = 'Submit';
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitBtn').classList.remove('btn-secondary');
+    document.getElementById('submitBtn').classList.add('btn-primary');
+    
     ['fun','creativity','difficulty','polish'].forEach(cat => {
         const row = document.getElementById('stars-' + cat);
-        row.innerHTML = [1,2,3,4,5].map(n =>
-            `<span class="star" onclick="setStar('${cat}',${n})">☆</span>`
-        ).join('');
+        row.innerHTML = '';
+        for (let n = 1; n <= 5; n++) {
+            const star = document.createElement('span');
+            star.className = 'star';
+            star.textContent = '☆';
+            star.onclick = (function(c, val) { return function() { setStar(c, val); }; })(cat, n);
+            row.appendChild(star);
+        }
     });
     document.getElementById('ratingModal').classList.add('active');
 }
@@ -300,12 +328,20 @@ function openModal(idx) {
 function setStar(cat, n) {
     currentStars[cat] = n;
     const row = document.getElementById('stars-' + cat);
-    row.querySelectorAll('.star').forEach((s, i) => {
-        s.textContent = i < n ? '★' : '☆';
-        s.classList.toggle('on', i < n);
+    const stars = row.querySelectorAll('.star');
+    stars.forEach((star, i) => {
+        if (i < n) {
+            star.textContent = '★';
+            star.classList.add('on');
+        } else {
+            star.textContent = '☆';
+            star.classList.remove('on');
+        }
     });
-    document.getElementById('submitBtn').disabled =
-        !Object.values(currentStars).every(v => v > 0);
+    
+    const allRated = currentStars.fun > 0 && currentStars.creativity > 0 && 
+                     currentStars.difficulty > 0 && currentStars.polish > 0;
+    document.getElementById('submitBtn').disabled = !allRated;
 }
 
 function closeModal() {
@@ -318,47 +354,76 @@ async function submitRating() {
     btn.disabled = true;
     btn.textContent = 'Saving...';
 
+    // Match your Supabase table column names exactly
     const payload = {
         gameFolder: activeGame.folder,
-        gameName:   activeGame.name,
-        fun:        currentStars.fun,
+        gameName: activeGame.name,
+        fun: currentStars.fun,
         creativity: currentStars.creativity,
         difficulty: currentStars.difficulty,
-        polish:     currentStars.polish,
-        comment:    document.getElementById('commentBox').value.trim() || null
+        polish: currentStars.polish,
+        comment: document.getElementById('commentBox').value.trim() || null
     };
 
+    console.log('Submitting rating:', payload);
+
     try {
-        const res = await fetch(`${SUPABASE_URL}/ratings`, {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/ratings`, {
             method: 'POST',
-            headers: { ...headers, 'Prefer': 'return=minimal' },
+            headers: {
+                ...headers,
+                'Prefer': 'return=representation'
+            },
             body: JSON.stringify(payload)
         });
 
-        if (res.ok) {
+        const responseText = await response.text();
+        console.log('Response status:', response.status);
+        console.log('Response body:', responseText);
+
+        if (response.ok) {
             closeModal();
-            showToast();
+            showToast('✓ Rating saved!', 'success');
             await displayGames();
         } else {
-            btn.textContent = 'Error — try again';
+            let errorMsg = `Error ${response.status}`;
+            try {
+                const errorData = JSON.parse(responseText);
+                errorMsg = errorData.message || errorMsg;
+            } catch(e) {
+                errorMsg = responseText || errorMsg;
+            }
+            showToast(`✗ Failed: ${errorMsg}`, 'error');
+            btn.textContent = 'Try Again';
             btn.disabled = false;
         }
     } catch(e) {
-        btn.textContent = 'Error — try again';
+        console.error('Network error:', e);
+        showToast(`✗ Network error: ${e.message}`, 'error');
+        btn.textContent = 'Try Again';
         btn.disabled = false;
     }
 }
 
-function showToast() {
-    const t = document.getElementById('toast');
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.remove('error-msg');
+    if (type === 'error') {
+        toast.style.backgroundColor = '#dc3545';
+    } else {
+        toast.style.backgroundColor = '#198754';
+    }
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
+// Close modal on overlay click
 document.getElementById('ratingModal').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
 });
 
+// Initialize
 displayGames();
 setInterval(displayGames, 30000);
 </script>
