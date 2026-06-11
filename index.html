@@ -6,10 +6,7 @@
     <title>Create PT APP SHOW</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
-            background: #f8f9fa;
-            padding: 2rem 0;
-        }
+        body { background: #f8f9fa; padding: 2rem 0; }
         .game-card {
             transition: all 0.2s ease-in-out;
             cursor: pointer;
@@ -22,10 +19,6 @@
             transform: translateY(-5px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
             border-color: #0d6efd;
-        }
-        .card-icon {
-            text-align: center;
-            margin: 1rem 0;
         }
         .card-icon img {
             width: 100%;
@@ -47,13 +40,6 @@
             border-left: 4px solid #0d6efd;
             margin-bottom: 2rem;
         }
-        .footer {
-            margin-top: 3rem;
-            padding: 1.5rem 0;
-            background: white;
-            border-top: 1px solid #dee2e6;
-            color: #6c757d;
-        }
         .game-count-badge {
             background: #0d6efd;
             color: white;
@@ -62,106 +48,315 @@
             font-size: 0.8rem;
             font-weight: 600;
         }
+        .footer {
+            margin-top: 3rem;
+            padding: 1.5rem 0;
+            background: white;
+            border-top: 1px solid #dee2e6;
+            color: #6c757d;
+        }
+        .btn-rate {
+            width: 100%;
+            margin-top: 6px;
+            font-size: 0.75rem;
+            padding: 4px 0;
+        }
+        .avg-display {
+            font-size: 0.7rem;
+            color: #856404;
+            background: #fff3cd;
+            border-radius: 4px;
+            padding: 2px 6px;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 440px;
+            margin: 1rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-box h5 { margin-bottom: 0.25rem; }
+        .modal-box .sub { color: #6c757d; font-size: 0.85rem; margin-bottom: 1.25rem; }
+        .star-row { margin-bottom: 1rem; }
+        .star-row label { font-size: 0.85rem; color: #495057; display: block; margin-bottom: 4px; }
+        .stars { display: flex; gap: 6px; }
+        .star {
+            font-size: 1.6rem;
+            cursor: pointer;
+            color: #dee2e6;
+            transition: color 0.1s;
+            line-height: 1;
+            user-select: none;
+        }
+        .star.on { color: #ffc107; }
+        .star:hover { color: #ffc107; }
+        .modal-footer-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; }
+        .toast-msg {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: #198754;
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            z-index: 99999;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .toast-msg.show { display: block; }
     </style>
 </head>
 <body>
+
 <div class="container">
     <div class="alert rating-box d-flex align-items-center justify-content-between">
         <div>
-            <strong>Rate Honestly:</strong> After playing each game, click the button to submit your feedback.
+            <strong>Rate Honestly:</strong> Play each game, then click <em>Rate</em> to submit your feedback.
         </div>
-        <a href="https://forms.gle/45XNnFP8vguNWmQM9" class="btn btn-primary btn-sm" target="_blank">Open Rating Form</a>
     </div>
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="text-secondary">Submitted Games</h5>
         <span class="game-count-badge" id="gameCount">0</span>
     </div>
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="gameGrid">
-        <div class="col">
-            <div class="alert alert-info text-center">Loading games...</div>
+        <div class="col"><div class="alert alert-info text-center">Loading games...</div></div>
+    </div>
+</div>
+
+<div class="footer text-center mt-5">
+    <div class="container">
+        <p class="mb-0">Play · Rate · Be kind · Thank you</p>
+    </div>
+</div>
+
+<!-- Rating Modal -->
+<div class="modal-overlay" id="ratingModal">
+    <div class="modal-box">
+        <h5 id="modalGameName"></h5>
+        <p class="sub">Rate this game honestly — 1 = lowest, 5 = highest</p>
+        <div class="star-row">
+            <label>Fun factor</label>
+            <div class="stars" id="stars-fun"></div>
+        </div>
+        <div class="star-row">
+            <label>Creativity</label>
+            <div class="stars" id="stars-creativity"></div>
+        </div>
+        <div class="star-row">
+            <label>Difficulty / Balance</label>
+            <div class="stars" id="stars-difficulty"></div>
+        </div>
+        <div class="star-row">
+            <label>Overall polish</label>
+            <div class="stars" id="stars-polish"></div>
+        </div>
+        <div class="star-row">
+            <label>Comment <span style="color:#adb5bd">(optional)</span></label>
+            <textarea id="commentBox" class="form-control" rows="2" placeholder="What did you like? Any bugs?"></textarea>
+        </div>
+        <div class="modal-footer-btns">
+            <button class="btn btn-outline-secondary btn-sm" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary btn-sm" id="submitBtn" onclick="submitRating()" disabled>Submit</button>
         </div>
     </div>
 </div>
-<div class="footer text-center mt-5">
-    <div class="container">
-        <p class="mb-0">Play - Rate - Be kind - Thank you</p>
-    </div>
-</div>
+
+<div class="toast-msg" id="toast">✓ Rating saved!</div>
+
 <script>
-let gameFolders = [
-       { name: "Pokemon Game",       folder: "Pokemon",       github:"https://makb0925.github.io/Pokemon_Game", rated:false},
-     { name: "Stockle",       folder: "Stockle",       github:"https://sebbra26-creator.github.io/STOCKLE", rated:false},
-    { name: "Dolphin Pop",       folder: "DolphinPop",       github: "https://clajoo27.github.io/Dolphin-Pop/?authuser=0",                   rated: false },
-    { name: "Car Race",          folder: "CarRace",          github: "https://tyler-bergman.github.io/Final-Project/?authuser=0",            rated: false },
-    { name: "BasketBall Game",   folder: "Basketball",       github: "https://yurihan08.github.io/BasketballGame/",                          rated: false },
-    { name: "Maze Run",          folder: "MazeGame",         github: "https://serenego127.github.io/mazeRun/?authuser=0",                    rated: false },
-    { name: "Human Benchmark",   folder: "HumanBenchmark",   github: "https://thejeo27.github.io/HumanBenchmark/?authuser=0",                rated: false },
-    { name: "Doodle Jump",       folder: "DoodleJump",       github: "https://george123-cloud.github.io/DoodleJump/?authuser=0",             rated: false },
-    { name: "Cannon BBall",      folder: "CannonBall",       github: "https://jalen-hall.github.io/CannonBBALL/",                           rated: false },
-    { name: "Ravenous Randy",    folder: "RavenousRandy",    github: "https://shinwin124.github.io/GameForCompSci/?authuser=0",              rated: false },
-    { name: "Super Striker",     folder: "SuperStriker",     github: "https://miguelyangel515-svg.github.io/Super-Striker-game/?authuser=0", rated: false },
-    { name: "Marathon Race",     folder: "MarathonRace",     github: "https://nickyawesome821.github.io/Marathon-game/?authuser=0",          rated: false },
-    { name: "Brick Game",        folder: "BrickGame",        github: "https://deabiba1.github.io/spacegame/?authuser=0",                    rated: true  },
-    { name: "Block Break",       folder: "BlockBreak",       github: "https://amir-suckra.github.io/BlockBreak/?authuser=0",                rated: true  },
-    { name: "PokeBerry Catcher", folder: "PokeBerryCatcher", github: "https://timisverycool-ui.github.io/BerryCatcher/?authuser=0",          rated: true  },
-    { name: "Jelly Fish",        folder: "JellyFish",        github: "https://sallyrubin724.github.io/SpongebobGame/?authuser=0",           rated: true  },
-    { name: "Music Notes",       folder: "MusicNotes",       github: "https://nicholasrozenblit-wq.github.io/siteReading/?authuser=0",      rated: true  },
-    { name: "Zombie Run",        folder: "ZombieRun",        github: "https://jacyag125.github.io/Zombie-Run/?authuser=0",                  rated: true  },
-    { name: "Charging Chaos",    folder: "ChargingChaos",    github: "https://gurvinder1027.github.io/ChargerChaos/",                       rated: true  },
-    { name: "Yahtzee",           folder: "Yahtzee",          github: "https://gianna-lobue.github.io/Yahtzee-/?authuser=0",                 rated: true  },
-    { name: "Surfing Game",      folder: "SurfingGame",      github: "https://dylanjhub.github.io/Surf-Rider/?authuser=0",                  rated: true  },
-    { name: "Santa Game",        folder: "SantaGame",        github: "https://jamgil27-glitch.github.io/Santa-Game/?authuser=0",            rated: true  },
-    { name: "Mewtwo Survival",   folder: "MewtwoSurvival",   github: "https://andrewhockey65-pixel.github.io/MewtwoSurvival/?authuser=0",   rated: true  }
+const SUPABASE_URL = 'https://ckvyqutltebnamvoyzrc.supabase.co/rest/v1/';
+const SUPABASE_KEY = 'sb_publishable_GiVb88ghATn8_0PLqEAasw_Vhf13eTD';
+
+const games = [
+    { name:"Pokemon Game",       folder:"Pokemon",         github:"https://makb0925.github.io/Pokemon_Game" },
+    { name:"Stockle",            folder:"Stockle",         github:"https://sebbra26-creator.github.io/STOCKLE" },
+    { name:"Dolphin Pop",        folder:"DolphinPop",      github:"https://clajoo27.github.io/Dolphin-Pop/" },
+    { name:"Car Race",           folder:"CarRace",         github:"https://tyler-bergman.github.io/Final-Project/" },
+    { name:"BasketBall Game",    folder:"Basketball",      github:"https://yurihan08.github.io/BasketballGame/" },
+    { name:"Maze Run",           folder:"MazeGame",        github:"https://serenego127.github.io/mazeRun/" },
+    { name:"Human Benchmark",    folder:"HumanBenchmark",  github:"https://thejeo27.github.io/HumanBenchmark/" },
+    { name:"Doodle Jump",        folder:"DoodleJump",      github:"https://george123-cloud.github.io/DoodleJump/" },
+    { name:"Cannon BBall",       folder:"CannonBall",      github:"https://jalen-hall.github.io/CannonBBALL/" },
+    { name:"Ravenous Randy",     folder:"RavenousRandy",   github:"https://shinwin124.github.io/GameForCompSci/" },
+    { name:"Super Striker",      folder:"SuperStriker",    github:"https://miguelyangel515-svg.github.io/Super-Striker-game/" },
+    { name:"Marathon Race",      folder:"MarathonRace",    github:"https://nickyawesome821.github.io/Marathon-game/" },
+    { name:"Brick Game",         folder:"BrickGame",       github:"https://deabiba1.github.io/spacegame/" },
+    { name:"Block Break",        folder:"BlockBreak",      github:"https://amir-suckra.github.io/BlockBreak/" },
+    { name:"PokeBerry Catcher",  folder:"PokeBerryCatcher",github:"https://timisverycool-ui.github.io/BerryCatcher/" },
+    { name:"Jelly Fish",         folder:"JellyFish",       github:"https://sallyrubin724.github.io/SpongebobGame/" },
+    { name:"Music Notes",        folder:"MusicNotes",      github:"https://nicholasrozenblit-wq.github.io/siteReading/" },
+    { name:"Zombie Run",         folder:"ZombieRun",       github:"https://jacyag125.github.io/Zombie-Run/" },
+    { name:"Charging Chaos",     folder:"ChargingChaos",   github:"https://gurvinder1027.github.io/ChargerChaos/" },
+    { name:"Yahtzee",            folder:"Yahtzee",         github:"https://gianna-lobue.github.io/Yahtzee-/" },
+    { name:"Surfing Game",       folder:"SurfingGame",     github:"https://dylanjhub.github.io/Surf-Rider/" },
+    { name:"Santa Game",         folder:"SantaGame",       github:"https://jamgil27-glitch.github.io/Santa-Game/" },
+    { name:"Mewtwo Survival",    folder:"MewtwoSurvival",  github:"https://andrewhockey65-pixel.github.io/MewtwoSurvival/" }
 ];
 
-function displayGames() {
-    const gridContainer = document.getElementById('gameGrid');
-    const gameCountSpan = document.getElementById('gameCount');
+let activeGame = null;
+let currentStars = { fun:0, creativity:0, difficulty:0, polish:0 };
+let avgCache = {};
 
-    if (gameFolders.length === 0) {
-        gridContainer.innerHTML = `
-            <div class="col-12">
-                <div class="alert alert-warning text-center">No games found.</div>
-            </div>`;
-        gameCountSpan.textContent = '0';
-        return;
-    }
+const headers = {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY
+};
 
-    gameCountSpan.textContent = gameFolders.length;
-    let html = '';
-
-    for (let i = 0; i < gameFolders.length; i++) {
-        const game      = gameFolders[i];
-        const gameUrl   = game.github ? game.github : game.folder + '/index.html';
-        const cardStyle = game.rated
-            ? 'background-color: #d1e7dd; border-color: #198754;'
-            : 'background-color: #f8d7da; border-color: #dc3545;';
-
-        html += `
-        <div class="col">
-            <a href="${escapeHtml(gameUrl)}" class="game-card card h-100 text-decoration-none" target="_blank" style="${cardStyle}">
-                <div class="card-body text-center">
-                    <div class="card-icon">
-                        <img src="${game.folder}/index.png"
-                             onerror="this.src='${game.folder}/index.gif'; this.onerror=null;">
-                    </div>
-                    <h6 class="card-title fw-bold text-dark mb-2">${escapeHtml(game.name)}</h6>
-                    <div class="folder-path">${escapeHtml(game.folder)}/</div>
-                </div>
-            </a>
-        </div>`;
-    }
-
-    gridContainer.innerHTML = html;
-}
-
-function escapeHtml(str) {
-    return str.replace(/[&<>"']/g, function(m) {
-        return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m];
+async function fetchAverages() {
+    const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/ratings?select=gameFolder,fun,creativity,difficulty,polish`,
+        { headers }
+    );
+    const rows = await res.json();
+    avgCache = {};
+    rows.forEach(r => {
+        if (!avgCache[r.gameFolder]) avgCache[r.gameFolder] = { sum:0, count:0 };
+        const avg = (r.fun + r.creativity + r.difficulty + r.polish) / 4;
+        avgCache[r.gameFolder].sum += avg;
+        avgCache[r.gameFolder].count += 1;
     });
 }
 
+function getAvg(folder) {
+    const d = avgCache[folder];
+    if (!d || !d.count) return null;
+    return (d.sum / d.count).toFixed(1);
+}
+
+function escapeHtml(str) {
+    return str.replace(/[&<>"']/g, m =>
+        ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])
+    );
+}
+
+async function displayGames() {
+    await fetchAverages();
+    const grid = document.getElementById('gameGrid');
+    document.getElementById('gameCount').textContent = games.length;
+
+    grid.innerHTML = games.map((g, i) => {
+        const avg = getAvg(g.folder);
+        const count = avgCache[g.folder]?.count || 0;
+        const cardStyle = avg
+            ? 'background-color:#d1e7dd;border-color:#198754;'
+            : 'background-color:#f8d7da;border-color:#dc3545;';
+        const stars = avg ? '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg)) : '';
+        return `
+        <div class="col">
+            <div class="card game-card h-100" style="${cardStyle}">
+                <div class="card-body text-center">
+                    <div class="card-icon mb-2">
+                        <img src="${escapeHtml(g.folder)}/index.png"
+                             onerror="this.src='${escapeHtml(g.folder)}/index.gif';this.onerror=null;">
+                    </div>
+                    <h6 class="card-title fw-bold text-dark mb-1">${escapeHtml(g.name)}</h6>
+                    <div class="folder-path mb-2">${escapeHtml(g.folder)}/</div>
+                    ${avg ? `<div class="avg-display">${stars} ${avg} <span style="color:#6c757d">(${count})</span></div>` : ''}
+                    <a href="${escapeHtml(g.github)}" class="btn btn-sm btn-outline-primary w-100 mt-2" target="_blank">▶ Play</a>
+                    <button class="btn btn-sm ${avg ? 'btn-success' : 'btn-outline-secondary'} btn-rate"
+                            onclick="openModal(${i})">
+                        ${avg ? '★ Rated · Rate again' : 'Rate this game'}
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function openModal(idx) {
+    activeGame = games[idx];
+    currentStars = { fun:0, creativity:0, difficulty:0, polish:0 };
+    document.getElementById('modalGameName').textContent = activeGame.name;
+    document.getElementById('commentBox').value = '';
+    document.getElementById('submitBtn').disabled = true;
+    ['fun','creativity','difficulty','polish'].forEach(cat => {
+        const row = document.getElementById('stars-' + cat);
+        row.innerHTML = [1,2,3,4,5].map(n =>
+            `<span class="star" onclick="setStar('${cat}',${n})">☆</span>`
+        ).join('');
+    });
+    document.getElementById('ratingModal').classList.add('active');
+}
+
+function setStar(cat, n) {
+    currentStars[cat] = n;
+    const row = document.getElementById('stars-' + cat);
+    row.querySelectorAll('.star').forEach((s, i) => {
+        s.textContent = i < n ? '★' : '☆';
+        s.classList.toggle('on', i < n);
+    });
+    document.getElementById('submitBtn').disabled =
+        !Object.values(currentStars).every(v => v > 0);
+}
+
+function closeModal() {
+    document.getElementById('ratingModal').classList.remove('active');
+    activeGame = null;
+}
+
+async function submitRating() {
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    const payload = {
+        gameFolder: activeGame.folder,
+        gameName:   activeGame.name,
+        fun:        currentStars.fun,
+        creativity: currentStars.creativity,
+        difficulty: currentStars.difficulty,
+        polish:     currentStars.polish,
+        comment:    document.getElementById('commentBox').value.trim() || null
+    };
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings`, {
+        method: 'POST',
+        headers: { ...headers, 'Prefer': 'return=minimal' },
+        body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+        closeModal();
+        showToast();
+        await displayGames();
+    } else {
+        btn.textContent = 'Error — try again';
+        btn.disabled = false;
+    }
+}
+
+function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Close modal on overlay click
+document.getElementById('ratingModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+
 displayGames();
+// Refresh averages every 30 seconds
+setInterval(displayGames, 30000);
 </script>
 </body>
 </html>
