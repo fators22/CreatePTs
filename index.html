@@ -104,17 +104,13 @@
             margin-bottom: 15px;
             font-size: 0.85rem;
         }
-        .btn-rate:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="info-banner">
-        🔒 <strong>One rating per game per computer.</strong> Rate each game once. Rate different games as many as you want!
+        🔒 <strong>One rating per game per computer.</strong> Each device can rate each game once.
     </div>
     
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -163,7 +159,7 @@
     </div>
 </div>
 
-<div class="toast-msg" id="toast">✓ Rating saved!</div>
+<div class="toast-msg" id="toast"></div>
 
 <script>
 const SUPABASE_URL = 'https://ckvyqutltebnamvoyzrc.supabase.co';
@@ -198,9 +194,9 @@ const games = [
 let activeGame = null;
 let currentRatings = {};
 let ratingsCache = {};
-let userRatedGames = new Set(); // Tracks which games THIS device rated
+let userRatedGames = new Set();
 
-// Get unique device ID (stored in browser localStorage)
+// Get or create unique device ID
 function getDeviceId() {
     let deviceId = localStorage.getItem('game_rating_device_id');
     if (!deviceId) {
@@ -211,6 +207,7 @@ function getDeviceId() {
 }
 
 const deviceId = getDeviceId();
+console.log('Device ID:', deviceId);
 
 const headers = {
     'Content-Type': 'application/json',
@@ -218,31 +215,36 @@ const headers = {
     'Authorization': 'Bearer ' + SUPABASE_KEY
 };
 
-// Fetch all ratings and check which games this device has rated
+// Fetch all ratings
 async function fetchRatings() {
     try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings?select=gameFolder,fun,creativity,difficulty,polish,device_id`, { headers });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings?select=*`, { headers });
+        if (!res.ok) {
+            console.error('Fetch failed:', res.status);
+            return;
+        }
         const data = await res.json();
         
         ratingsCache = {};
         userRatedGames.clear();
         
         data.forEach(r => {
-            // Track which games THIS DEVICE has already rated
+            // Track which games this device has rated (using lowercase column names)
             if (r.device_id === deviceId) {
-                userRatedGames.add(r.gameFolder);
+                userRatedGames.add(r.gamefolder);
             }
             
-            // Calculate average ratings for display
-            if (!ratingsCache[r.gameFolder]) ratingsCache[r.gameFolder] = [];
-            ratingsCache[r.gameFolder].push({
+            // Calculate averages
+            if (!ratingsCache[r.gamefolder]) {
+                ratingsCache[r.gamefolder] = [];
+            }
+            ratingsCache[r.gamefolder].push({
                 avg: (r.fun + r.creativity + r.difficulty + r.polish) / 4
             });
         });
         
-        console.log('Your Device ID:', deviceId);
-        console.log('Games you have rated:', Array.from(userRatedGames));
+        console.log('Games you rated:', Array.from(userRatedGames));
+        console.log('Ratings cache:', ratingsCache);
     } catch(e) {
         console.error('Fetch error:', e);
     }
@@ -258,7 +260,7 @@ function getRatingCount(folder) {
     return ratingsCache[folder]?.length || 0;
 }
 
-function hasUserRatedThisGame(folder) {
+function hasUserRated(folder) {
     return userRatedGames.has(folder);
 }
 
@@ -271,7 +273,7 @@ async function displayGames() {
         const avg = getAverageRating(game.folder);
         const count = getRatingCount(game.folder);
         const stars = avg ? '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg)) : '';
-        const alreadyRated = hasUserRatedThisGame(game.folder);
+        const alreadyRated = hasUserRated(game.folder);
         
         return `
         <div class="col">
@@ -283,12 +285,12 @@ async function displayGames() {
                     <h6 class="card-title fw-bold mt-2">${game.name}</h6>
                     <div class="folder-path mb-2">${game.folder}/</div>
                     ${avg ? `<div class="avg-display">${stars} ${avg} (${count} ratings)</div>` : '<div class="avg-display text-muted">Be the first to rate!</div>'}
-                    ${alreadyRated ? '<div class="rated-badge">✓ You already rated this</div>' : ''}
+                    ${alreadyRated ? '<div class="rated-badge">✓ You rated this</div>' : ''}
                     <a href="${game.github}" class="btn btn-sm btn-outline-primary w-100 mt-2" target="_blank">▶ Play</a>
                     <button class="btn btn-sm ${alreadyRated ? 'btn-secondary' : 'btn-outline-success'} w-100 mt-2" 
-                            onclick="openRatingModal(${idx})"
+                            onclick="openModal(${idx})"
                             ${alreadyRated ? 'disabled' : ''}>
-                        ${alreadyRated ? '✓ Rated' : '⭐ Rate This Game'}
+                        ${alreadyRated ? '✓ Already Rated' : '⭐ Rate This Game'}
                     </button>
                 </div>
             </div>
@@ -296,21 +298,20 @@ async function displayGames() {
     }).join('');
 }
 
-function openRatingModal(idx) {
+function openModal(idx) {
     const game = games[idx];
     
-    // Double check they haven't already rated this game
-    if (hasUserRatedThisGame(game.folder)) {
-        showToast('You have already rated this game on this computer!', 'error');
+    if (hasUserRated(game.folder)) {
+        showToast('You already rated this game on this computer!', 'error');
         return;
     }
     
     activeGame = game;
     currentRatings = {};
-    document.getElementById('modalGameName').textContent = activeGame.name;
+    document.getElementById('modalGameName').innerHTML = `${activeGame.name} <small style="font-size:0.7rem;">(One rating per device)</small>`;
     document.getElementById('commentBox').value = '';
     
-    // Create star ratings
+    // Reset star ratings
     ['fun', 'creativity', 'difficulty', 'polish'].forEach(category => {
         const container = document.querySelector(`.star-rating[data-category="${category}"]`);
         if (!container) return;
@@ -356,16 +357,19 @@ async function submitRating() {
     btn.disabled = true;
     btn.textContent = 'Saving...';
     
+    // Use LOWERCASE column names to match your database
     const payload = {
-        gameFolder: activeGame.folder,
-        gameName: activeGame.name,
+        gamefolder: activeGame.folder,   // lowercase - matches your DB column
+        gamename: activeGame.name,        // lowercase - matches your DB column
         fun: currentRatings.fun,
         creativity: currentRatings.creativity,
         difficulty: currentRatings.difficulty,
         polish: currentRatings.polish,
         comment: document.getElementById('commentBox').value || null,
-        device_id: deviceId  // This prevents rating the same game again
+        device_id: deviceId
     };
+    
+    console.log('Submitting payload:', payload);
     
     try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings`, {
@@ -376,18 +380,26 @@ async function submitRating() {
         
         if (res.ok) {
             closeModal();
-            showToast(`✓ You rated ${activeGame.name}! You cannot rate it again.`, 'success');
-            userRatedGames.add(activeGame.folder); // Update local tracking
-            await displayGames(); // Refresh the grid
+            showToast(`✓ Thank you! Your rating for ${activeGame.name} has been saved.`, 'success');
+            userRatedGames.add(activeGame.folder);
+            await displayGames();
         } else {
             const errorText = await res.text();
-            console.error('Submit error:', errorText);
-            showToast(`❌ Failed to save rating. ${errorText.substring(0, 100)}`, 'error');
+            console.error('Submit error:', res.status, errorText);
+            
+            if (errorText.includes('duplicate key') || errorText.includes('unique constraint')) {
+                showToast(`❌ You have already rated ${activeGame.name} on this device!`, 'error');
+                userRatedGames.add(activeGame.folder);
+                await displayGames();
+            } else {
+                showToast(`❌ Failed to save rating. ${errorText.substring(0, 100)}`, 'error');
+            }
             btn.textContent = 'Try Again';
             btn.disabled = false;
         }
     } catch(e) {
-        showToast(`❌ Error: ${e.message}`, 'error');
+        console.error('Network error:', e);
+        showToast(`❌ Network error: ${e.message}`, 'error');
         btn.textContent = 'Try Again';
         btn.disabled = false;
     }
