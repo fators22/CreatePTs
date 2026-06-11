@@ -110,11 +110,11 @@
 
 <div class="container">
     <div class="info-banner">
-        🔒 <strong>One rating per game per computer.</strong> Each device can rate each game once.
+        Play · Rate Once Per Game Per device   <strong>  Be honest and kind.</strong> 
     </div>
     
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5>🎮 Submitted Games</h5>
+        <h5>  AP CSP Games</h5>
         <span class="badge bg-primary" id="gameCount">0</span>
     </div>
     
@@ -124,7 +124,7 @@
 </div>
 
 <div class="footer text-center mt-5 py-4 bg-white border-top">
-    <p class="mb-0">Play · Rate Once Per Game · Be kind</p>
+    <p class="mb-0">Play · Rate Once Per Game · Be kind ·  Be honest</p>
 </div>
 
 <!-- Rating Modal -->
@@ -290,7 +290,7 @@ async function displayGames() {
                     <button class="btn btn-sm ${alreadyRated ? 'btn-secondary' : 'btn-outline-success'} w-100 mt-2" 
                             onclick="openModal(${idx})"
                             ${alreadyRated ? 'disabled' : ''}>
-                        ${alreadyRated ? '✓ Already Rated' : '⭐ Rate This Game'}
+                        ${alreadyRated ? '✓ Already Rated' : 'Rate Game'}
                     </button>
                 </div>
             </div>
@@ -380,7 +380,7 @@ async function submitRating() {
         
         if (res.ok) {
             closeModal();
-            showToast(`✓ Thank you! Your rating for ${activeGame.name} has been saved.`, 'success');
+            showToast(`✓ Thank you!  ${activeGame.name} is rated.`, 'success');
             userRatedGames.add(activeGame.folder);
             await displayGames();
         } else {
