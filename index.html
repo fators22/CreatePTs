@@ -174,11 +174,11 @@
             <div class="star-rating" data-category="polish"></div>
         </div>
             <div class="mb-3">
-            <label> Best Overallh</label>
+            <label> Best Overall</label>
             <div class="star-rating" data-category="overall"></div>
         </div>
         <div class="mb-3">
-            <label>Comment (optional)</label>
+            <label>Comment </label>
             <textarea id="commentBox" class="form-control" rows="2" placeholder="What did you like? Any bugs?"></textarea>
         </div>
         <div class="d-flex gap-2 justify-content-end">
@@ -269,7 +269,7 @@ async function fetchRatings() {
                 ratingsCache[r.gamefolder] = [];
             }
             ratingsCache[r.gamefolder].push({
-                avg: (r.fun + r.creativity + r.difficulty + r.polish) / 4
+                avg: (r.fun*2 + r.difficulty*2 + r.difficulty*1 + r.polish*2 + r.overall*3) / 10
             });
         });
         
@@ -342,7 +342,7 @@ function openModal(idx) {
     document.getElementById('commentBox').value = '';
     
     // Reset star ratings
-    ['fun', 'creativity', 'difficulty', 'polish'].forEach(category => {
+    ['fun', 'creativity', 'difficulty', 'polish', 'overall'].forEach(category => {
         const container = document.querySelector(`.star-rating[data-category="${category}"]`);
         if (!container) return;
         container.innerHTML = '';
@@ -373,7 +373,7 @@ function setStar(category, value) {
         }
     });
     
-    const allRated = ['fun', 'creativity', 'difficulty', 'polish'].every(c => currentRatings[c] > 0);
+    const allRated = ['fun', 'creativity', 'difficulty', 'polish', 'overall'].every(c => currentRatings[c] > 0);
     document.getElementById('submitBtn').disabled = !allRated;
 }
 
@@ -395,6 +395,7 @@ async function submitRating() {
         creativity: currentRatings.creativity,
         difficulty: currentRatings.difficulty,
         polish: currentRatings.polish,
+        overall: currentRatings.overall,
         comment: document.getElementById('commentBox').value || null,
         device_id: deviceId
     };
