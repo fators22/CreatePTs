@@ -104,6 +104,30 @@
             margin-bottom: 15px;
             font-size: 0.85rem;
         }
+        /* Force exactly 5 cards per row */
+#gameGrid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+}
+
+#gameGrid > .col {
+    flex: 0 0 auto;
+    width: 20%;  /* 100% / 5 columns = 20% */
+}
+
+/* Keep 5 columns on all screen sizes */
+@media (max-width: 1200px) {
+    #gameGrid > .col { width: 20%; }
+}
+@media (max-width: 992px) {
+    #gameGrid > .col { width: 20%; }
+}
+@media (max-width: 768px) {
+    #gameGrid > .col { width: 20%; }
+}
+@media (max-width: 576px) {
+    #gameGrid > .col { width: 20%; }
+}
     </style>
 </head>
 <body>
@@ -118,9 +142,10 @@
         <span class="badge bg-primary" id="gameCount">0</span>
     </div>
     
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="gameGrid">
-        <div class="col"><div class="alert alert-info text-center">Loading games...</div></div>
-    </div>
+
+<div class="row g-4" id="gameGrid" style="display: flex; flex-wrap: wrap;">
+    <div class="col"><div class="alert alert-info text-center">Loading games...</div></div>
+</div>
 </div>
 
 <div class="footer text-center mt-5 py-4 bg-white border-top">
