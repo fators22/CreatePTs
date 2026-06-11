@@ -3,63 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create PT APP SHOW</title>
+    <title>Game Rating App</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #f8f9fa; padding: 2rem 0; }
         .game-card {
             transition: all 0.2s ease-in-out;
-            cursor: pointer;
-            text-decoration: none;
-            color: #212529;
-            height: 100%;
             border: 1px solid #dee2e6;
+            height: 100%;
+            background: white;
         }
         .game-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
             border-color: #0d6efd;
         }
-        .card-icon img {
+        .game-icon {
             width: 100%;
             height: 120px;
             object-fit: contain;
             border-radius: 8px;
+            margin-bottom: 10px;
         }
         .folder-path {
-            font-family: 'Courier New', monospace;
+            font-family: monospace;
             font-size: 0.7rem;
             color: #6c757d;
             background: #f8f9fa;
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
             display: inline-block;
-        }
-        .rating-box {
-            background: #e9ecef;
-            border-left: 4px solid #0d6efd;
-            margin-bottom: 2rem;
-        }
-        .game-count-badge {
-            background: #0d6efd;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        .footer {
-            margin-top: 3rem;
-            padding: 1.5rem 0;
-            background: white;
-            border-top: 1px solid #dee2e6;
-            color: #6c757d;
-        }
-        .btn-rate {
-            width: 100%;
-            margin-top: 6px;
-            font-size: 0.75rem;
-            padding: 4px 0;
         }
         .avg-display {
             font-size: 0.7rem;
@@ -70,8 +43,19 @@
             margin-top: 4px;
             display: inline-block;
         }
-
-        /* Modal */
+        .star-rating {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            margin: 5px 0;
+        }
+        .star {
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: #dee2e6;
+            transition: color 0.1s;
+        }
+        .star:hover, .star.active { color: #ffc107; }
         .modal-overlay {
             display: none;
             position: fixed;
@@ -91,22 +75,6 @@
             margin: 1rem;
             box-shadow: 0 20px 60px rgba(0,0,0,0.2);
         }
-        .modal-box h5 { margin-bottom: 0.25rem; }
-        .modal-box .sub { color: #6c757d; font-size: 0.85rem; margin-bottom: 1.25rem; }
-        .star-row { margin-bottom: 1rem; }
-        .star-row label { font-size: 0.85rem; color: #495057; display: block; margin-bottom: 4px; }
-        .stars { display: flex; gap: 6px; }
-        .star {
-            font-size: 1.6rem;
-            cursor: pointer;
-            color: #dee2e6;
-            transition: color 0.1s;
-            line-height: 1;
-            user-select: none;
-        }
-        .star.on { color: #ffc107; }
-        .star:hover { color: #ffc107; }
-        .modal-footer-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; }
         .toast-msg {
             position: fixed;
             bottom: 1.5rem;
@@ -115,80 +83,94 @@
             color: white;
             padding: 0.75rem 1.25rem;
             border-radius: 8px;
-            font-size: 0.875rem;
             z-index: 99999;
             display: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         .toast-msg.show { display: block; }
-        .error-msg {
+        .error-banner {
             background: #dc3545;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .error-banner.show { display: block; }
+        .game-count-badge {
+            background: #0d6efd;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="alert rating-box d-flex align-items-center justify-content-between">
-        <div>
-            <strong>Rate Honestly:</strong> Play each game, then click <em>Rate</em> to submit your feedback.
-        </div>
+    <div class="error-banner" id="errorBanner">
+        ⚠️ <strong>Permission Error!</strong> Please run the SQL grant commands in Supabase.
     </div>
+    
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <div><strong>🎮 Rate Games:</strong> Click ★ to rate after playing!</div>
+        <button class="btn btn-sm btn-warning" onclick="testPermissions()">Test DB</button>
+    </div>
+    
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="text-secondary">Submitted Games</h5>
+        <h5>Submitted Games</h5>
         <span class="game-count-badge" id="gameCount">0</span>
     </div>
+    
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="gameGrid">
         <div class="col"><div class="alert alert-info text-center">Loading games...</div></div>
     </div>
 </div>
 
-<div class="footer text-center mt-5">
-    <div class="container">
-        <p class="mb-0">Play · Rate · Be kind · Thank you</p>
-    </div>
+<div class="footer text-center mt-5 py-4 bg-white border-top">
+    <p class="mb-0">Play · Rate · Be kind</p>
 </div>
 
 <!-- Rating Modal -->
 <div class="modal-overlay" id="ratingModal">
     <div class="modal-box">
         <h5 id="modalGameName"></h5>
-        <p class="sub">Rate this game honestly — 1 = lowest, 5 = highest</p>
-        <div class="star-row">
+        <p class="text-muted small">Rate 1-5 stars</p>
+        <div class="mb-3">
             <label>Fun factor</label>
-            <div class="stars" id="stars-fun"></div>
+            <div class="star-rating" data-category="fun"></div>
         </div>
-        <div class="star-row">
+        <div class="mb-3">
             <label>Creativity</label>
-            <div class="stars" id="stars-creativity"></div>
+            <div class="star-rating" data-category="creativity"></div>
         </div>
-        <div class="star-row">
+        <div class="mb-3">
             <label>Difficulty / Balance</label>
-            <div class="stars" id="stars-difficulty"></div>
+            <div class="star-rating" data-category="difficulty"></div>
         </div>
-        <div class="star-row">
+        <div class="mb-3">
             <label>Overall polish</label>
-            <div class="stars" id="stars-polish"></div>
+            <div class="star-rating" data-category="polish"></div>
         </div>
-        <div class="star-row">
-            <label>Comment <span style="color:#adb5bd">(optional)</span></label>
+        <div class="mb-3">
+            <label>Comment (optional)</label>
             <textarea id="commentBox" class="form-control" rows="2" placeholder="What did you like? Any bugs?"></textarea>
         </div>
-        <div class="modal-footer-btns">
-            <button class="btn btn-outline-secondary btn-sm" onclick="closeModal()">Cancel</button>
+        <div class="d-flex gap-2 justify-content-end">
+            <button class="btn btn-secondary btn-sm" onclick="closeModal()">Cancel</button>
             <button class="btn btn-primary btn-sm" id="submitBtn" onclick="submitRating()" disabled>Submit</button>
         </div>
     </div>
 </div>
 
-<div class="toast-msg" id="toast">✓ Rating saved!</div>
+<div class="toast-msg" id="toast">✓ Saved!</div>
 
 <script>
-// CORRECT Supabase configuration
 const SUPABASE_URL = 'https://ckvyqutltebnamvoyzrc.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_GiVb88ghATn8_0PLqEAasw_Vhf13eTD';
+const SUPABASE_KEY = 'sb_publishable_GiVb88ghATn8_0PLqEAasw_Vhf13eTD';
 
-// Games list
+// ALL 23 games with index.png as icon
 const games = [
     { name:"Pokemon Game",       folder:"Pokemon",         github:"https://makb0925.github.io/Pokemon_Game" },
     { name:"Stockle",            folder:"Stockle",         github:"https://sebbra26-creator.github.io/STOCKLE" },
@@ -216,84 +198,87 @@ const games = [
 ];
 
 let activeGame = null;
-let currentStars = { fun:0, creativity:0, difficulty:0, polish:0 };
-let avgCache = {};
+let currentRatings = {};
+let ratingsCache = {};
 
 const headers = {
     'Content-Type': 'application/json',
-    'apikey': SUPABASE_ANON_KEY,
-    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY
 };
 
-// Fetch ratings from Supabase
-async function fetchAverages() {
+async function testPermissions() {
+    showToast('Testing database...', 'info');
     try {
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/ratings?select=gameFolder,fun,creativity,difficulty,polish`, {
-            method: 'GET',
-            headers: headers
+        const readTest = await fetch(`${SUPABASE_URL}/rest/v1/ratings?limit=1`, { headers });
+        const writeTest = await fetch(`${SUPABASE_URL}/rest/v1/ratings`, {
+            method: 'POST',
+            headers: { ...headers, 'Prefer': 'return=minimal' },
+            body: JSON.stringify({ gameFolder: '_test', gameName: 'Test', fun: 5, creativity: 5, difficulty: 5, polish: 5 })
         });
         
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        if (readTest.ok && writeTest.ok) {
+            showToast('✅ Database working!', 'success');
+            document.getElementById('errorBanner').classList.remove('show');
+        } else {
+            showToast(`❌ Permissions error! Run SQL grants.`, 'error');
+            document.getElementById('errorBanner').classList.add('show');
         }
-        
-        const rows = await response.json();
-        avgCache = {};
-        
-        rows.forEach(r => {
-            if (!avgCache[r.gameFolder]) {
-                avgCache[r.gameFolder] = { sum: 0, count: 0 };
-            }
-            const avg = (r.fun + r.creativity + r.difficulty + r.polish) / 4;
-            avgCache[r.gameFolder].sum += avg;
-            avgCache[r.gameFolder].count += 1;
-        });
-        
-        console.log('Averages loaded:', avgCache);
     } catch(e) {
-        console.error('Error fetching averages:', e);
-        avgCache = {};
+        showToast(`❌ Error: ${e.message}`, 'error');
     }
 }
 
-function getAvg(folder) {
-    const d = avgCache[folder];
-    if (!d || !d.count) return null;
-    return (d.sum / d.count).toFixed(1);
+async function fetchRatings() {
+    try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings?select=gameFolder,fun,creativity,difficulty,polish`, { headers });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        ratingsCache = {};
+        data.forEach(r => {
+            if (!ratingsCache[r.gameFolder]) ratingsCache[r.gameFolder] = [];
+            ratingsCache[r.gameFolder].push({
+                avg: (r.fun + r.creativity + r.difficulty + r.polish) / 4
+            });
+        });
+    } catch(e) {
+        console.error('Fetch error:', e);
+        ratingsCache = {};
+    }
 }
 
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>"']/g, m =>
-        ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])
-    );
+function getAverageRating(folder) {
+    if (!ratingsCache[folder] || ratingsCache[folder].length === 0) return null;
+    const sum = ratingsCache[folder].reduce((acc, r) => acc + r.avg, 0);
+    return (sum / ratingsCache[folder].length).toFixed(1);
+}
+
+function getRatingCount(folder) {
+    return ratingsCache[folder]?.length || 0;
 }
 
 async function displayGames() {
-    await fetchAverages();
+    await fetchRatings();
     const grid = document.getElementById('gameGrid');
     document.getElementById('gameCount').textContent = games.length;
-
-    grid.innerHTML = games.map((g, i) => {
-        const avg = getAvg(g.folder);
-        const count = avgCache[g.folder]?.count || 0;
+    
+    grid.innerHTML = games.map((game, idx) => {
+        const avg = getAverageRating(game.folder);
+        const count = getRatingCount(game.folder);
         const stars = avg ? '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg)) : '';
+        
         return `
         <div class="col">
-            <div class="card game-card h-100">
+            <div class="card game-card">
                 <div class="card-body text-center">
-                    <div class="card-icon mb-2">
-                        <img src="${escapeHtml(g.folder)}/index.png"
-                             onerror="this.src='${escapeHtml(g.folder)}/index.gif';this.onerror=null;">
-                    </div>
-                    <h6 class="card-title fw-bold text-dark mb-1">${escapeHtml(g.name)}</h6>
-                    <div class="folder-path mb-2">${escapeHtml(g.folder)}/</div>
-                    ${avg ? `<div class="avg-display">${stars} ${avg} <span style="color:#6c757d">(${count})</span></div>` : '<div class="avg-display">Not yet rated</div>'}
-                    <a href="${escapeHtml(g.github)}" class="btn btn-sm btn-outline-primary w-100 mt-2" target="_blank">▶ Play</a>
-                    <button class="btn btn-sm btn-outline-secondary btn-rate"
-                            onclick="openModal(${i})">
-                        Rate this game
-                    </button>
+                    <img src="${game.folder}/index.png" 
+                         class="game-icon"
+                         onerror="this.src='https://via.placeholder.com/120x120?text=No+Image'; this.onerror=null;">
+                    <h6 class="card-title fw-bold mt-2">${game.name}</h6>
+                    <div class="folder-path mb-2">${game.folder}/</div>
+                    ${avg ? `<div class="avg-display">${stars} ${avg} (${count})</div>` : '<div class="avg-display text-muted">Not rated yet</div>'}
+                    <a href="${game.github}" class="btn btn-sm btn-outline-primary w-100 mt-2" target="_blank">▶ Play</a>
+                    <button class="btn btn-sm btn-outline-secondary w-100 mt-2" onclick="openModal(${idx})">⭐ Rate</button>
                 </div>
             </div>
         </div>`;
@@ -302,45 +287,41 @@ async function displayGames() {
 
 function openModal(idx) {
     activeGame = games[idx];
-    currentStars = { fun:0, creativity:0, difficulty:0, polish:0 };
+    currentRatings = {};
     document.getElementById('modalGameName').textContent = activeGame.name;
     document.getElementById('commentBox').value = '';
-    document.getElementById('submitBtn').disabled = true;
-    document.getElementById('submitBtn').textContent = 'Submit';
-    document.getElementById('submitBtn').disabled = false;
-    document.getElementById('submitBtn').classList.remove('btn-secondary');
-    document.getElementById('submitBtn').classList.add('btn-primary');
     
-    ['fun','creativity','difficulty','polish'].forEach(cat => {
-        const row = document.getElementById('stars-' + cat);
-        row.innerHTML = '';
-        for (let n = 1; n <= 5; n++) {
+    document.querySelectorAll('.star-rating').forEach(container => {
+        const category = container.dataset.category;
+        container.innerHTML = '';
+        for (let i = 1; i <= 5; i++) {
             const star = document.createElement('span');
             star.className = 'star';
             star.textContent = '☆';
-            star.onclick = (function(c, val) { return function() { setStar(c, val); }; })(cat, n);
-            row.appendChild(star);
-        }
-    });
-    document.getElementById('ratingModal').classList.add('active');
-}
-
-function setStar(cat, n) {
-    currentStars[cat] = n;
-    const row = document.getElementById('stars-' + cat);
-    const stars = row.querySelectorAll('.star');
-    stars.forEach((star, i) => {
-        if (i < n) {
-            star.textContent = '★';
-            star.classList.add('on');
-        } else {
-            star.textContent = '☆';
-            star.classList.remove('on');
+            star.onclick = () => setStar(category, i);
+            container.appendChild(star);
         }
     });
     
-    const allRated = currentStars.fun > 0 && currentStars.creativity > 0 && 
-                     currentStars.difficulty > 0 && currentStars.polish > 0;
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('ratingModal').classList.add('active');
+}
+
+function setStar(category, value) {
+    currentRatings[category] = value;
+    const container = document.querySelector(`.star-rating[data-category="${category}"]`);
+    const stars = container.querySelectorAll('.star');
+    stars.forEach((star, i) => {
+        if (i < value) {
+            star.textContent = '★';
+            star.classList.add('active');
+        } else {
+            star.textContent = '☆';
+            star.classList.remove('active');
+        }
+    });
+    
+    const allRated = ['fun', 'creativity', 'difficulty', 'polish'].every(c => currentRatings[c] > 0);
     document.getElementById('submitBtn').disabled = !allRated;
 }
 
@@ -353,77 +334,54 @@ async function submitRating() {
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
     btn.textContent = 'Saving...';
-
-    // Match your Supabase table column names exactly
+    
     const payload = {
         gameFolder: activeGame.folder,
         gameName: activeGame.name,
-        fun: currentStars.fun,
-        creativity: currentStars.creativity,
-        difficulty: currentStars.difficulty,
-        polish: currentStars.polish,
-        comment: document.getElementById('commentBox').value.trim() || null
+        fun: currentRatings.fun,
+        creativity: currentRatings.creativity,
+        difficulty: currentRatings.difficulty,
+        polish: currentRatings.polish,
+        comment: document.getElementById('commentBox').value || null
     };
-
-    console.log('Submitting rating:', payload);
-
+    
     try {
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/ratings`, {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings`, {
             method: 'POST',
-            headers: {
-                ...headers,
-                'Prefer': 'return=representation'
-            },
+            headers: { ...headers, 'Prefer': 'return=minimal' },
             body: JSON.stringify(payload)
         });
-
-        const responseText = await response.text();
-        console.log('Response status:', response.status);
-        console.log('Response body:', responseText);
-
-        if (response.ok) {
+        
+        if (res.ok) {
             closeModal();
-            showToast('✓ Rating saved!', 'success');
+            showToast('✓ Rating saved! Thanks!', 'success');
             await displayGames();
         } else {
-            let errorMsg = `Error ${response.status}`;
-            try {
-                const errorData = JSON.parse(responseText);
-                errorMsg = errorData.message || errorMsg;
-            } catch(e) {
-                errorMsg = responseText || errorMsg;
-            }
-            showToast(`✗ Failed: ${errorMsg}`, 'error');
+            const error = await res.text();
+            showToast(`❌ Failed: ${res.status} - Permission denied!`, 'error');
             btn.textContent = 'Try Again';
             btn.disabled = false;
+            document.getElementById('errorBanner').classList.add('show');
         }
     } catch(e) {
-        console.error('Network error:', e);
-        showToast(`✗ Network error: ${e.message}`, 'error');
+        showToast(`❌ Error: ${e.message}`, 'error');
         btn.textContent = 'Try Again';
         btn.disabled = false;
     }
 }
 
-function showToast(message, type = 'success') {
+function showToast(msg, type) {
     const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.classList.remove('error-msg');
-    if (type === 'error') {
-        toast.style.backgroundColor = '#dc3545';
-    } else {
-        toast.style.backgroundColor = '#198754';
-    }
+    toast.textContent = msg;
+    toast.style.backgroundColor = type === 'error' ? '#dc3545' : type === 'info' ? '#0d6efd' : '#198754';
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
+    setTimeout(() => toast.classList.remove('show'), 4000);
 }
 
-// Close modal on overlay click
-document.getElementById('ratingModal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
+document.getElementById('ratingModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModal();
 });
 
-// Initialize
 displayGames();
 setInterval(displayGames, 30000);
 </script>
