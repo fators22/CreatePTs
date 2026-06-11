@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Rating App</title>
+    <title>Game Rating - One Rating Per Game Per Device</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #f8f9fa; padding: 2rem 0; }
@@ -16,7 +16,6 @@
         .game-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            border-color: #0d6efd;
         }
         .game-icon {
             width: 100%;
@@ -38,6 +37,15 @@
             font-size: 0.7rem;
             color: #856404;
             background: #fff3cd;
+            border-radius: 4px;
+            padding: 2px 6px;
+            margin-top: 4px;
+            display: inline-block;
+        }
+        .rated-badge {
+            font-size: 0.65rem;
+            color: #155724;
+            background: #d4edda;
             border-radius: 4px;
             padding: 2px 6px;
             margin-top: 4px;
@@ -87,40 +95,31 @@
             display: none;
         }
         .toast-msg.show { display: block; }
-        .error-banner {
-            background: #dc3545;
-            color: white;
-            padding: 10px;
+        .info-banner {
+            background: #cfe2ff;
+            border: 1px solid #9ec5fe;
+            color: #084298;
+            padding: 8px 12px;
             border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
         }
-        .error-banner.show { display: block; }
-        .game-count-badge {
-            background: #0d6efd;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
+        .btn-rate:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="error-banner" id="errorBanner">
-        ⚠️ <strong>Permission Error!</strong> Please run the SQL grant commands in Supabase.
-    </div>
-    
-    <div class="alert alert-info d-flex justify-content-between align-items-center">
-        <div><strong>🎮 Rate Games:</strong> Click ★ to rate after playing!</div>
-        <button class="btn btn-sm btn-warning" onclick="testPermissions()">Test DB</button>
+    <div class="info-banner">
+        🔒 <strong>One rating per game per computer.</strong> Rate each game once. Rate different games as many as you want!
     </div>
     
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5>Submitted Games</h5>
-        <span class="game-count-badge" id="gameCount">0</span>
+        <h5>🎮 Submitted Games</h5>
+        <span class="badge bg-primary" id="gameCount">0</span>
     </div>
     
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="gameGrid">
@@ -129,14 +128,14 @@
 </div>
 
 <div class="footer text-center mt-5 py-4 bg-white border-top">
-    <p class="mb-0">Play · Rate · Be kind</p>
+    <p class="mb-0">Play · Rate Once Per Game · Be kind</p>
 </div>
 
 <!-- Rating Modal -->
 <div class="modal-overlay" id="ratingModal">
     <div class="modal-box">
         <h5 id="modalGameName"></h5>
-        <p class="text-muted small">Rate 1-5 stars</p>
+        <p class="text-muted small">Rate 1-5 stars (you can only rate this game once)</p>
         <div class="mb-3">
             <label>Fun factor</label>
             <div class="star-rating" data-category="fun"></div>
@@ -164,42 +163,54 @@
     </div>
 </div>
 
-<div class="toast-msg" id="toast">✓ Saved!</div>
+<div class="toast-msg" id="toast">✓ Rating saved!</div>
 
 <script>
 const SUPABASE_URL = 'https://ckvyqutltebnamvoyzrc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_GiVb88ghATn8_0PLqEAasw_Vhf13eTD';
 
-// ALL 23 games with index.png as icon
 const games = [
-    { name:"Pokemon Game",       folder:"Pokemon",         github:"https://makb0925.github.io/Pokemon_Game" },
-    { name:"Stockle",            folder:"Stockle",         github:"https://sebbra26-creator.github.io/STOCKLE" },
-    { name:"Dolphin Pop",        folder:"DolphinPop",      github:"https://clajoo27.github.io/Dolphin-Pop/" },
-    { name:"Car Race",           folder:"CarRace",         github:"https://tyler-bergman.github.io/Final-Project/" },
-    { name:"BasketBall Game",    folder:"Basketball",      github:"https://yurihan08.github.io/BasketballGame/" },
-    { name:"Maze Run",           folder:"MazeGame",        github:"https://serenego127.github.io/mazeRun/" },
-    { name:"Human Benchmark",    folder:"HumanBenchmark",  github:"https://thejeo27.github.io/HumanBenchmark/" },
-    { name:"Doodle Jump",        folder:"DoodleJump",      github:"https://george123-cloud.github.io/DoodleJump/" },
-    { name:"Cannon BBall",       folder:"CannonBall",      github:"https://jalen-hall.github.io/CannonBBALL/" },
-    { name:"Ravenous Randy",     folder:"RavenousRandy",   github:"https://shinwin124.github.io/GameForCompSci/" },
-    { name:"Super Striker",      folder:"SuperStriker",    github:"https://miguelyangel515-svg.github.io/Super-Striker-game/" },
-    { name:"Marathon Race",      folder:"MarathonRace",    github:"https://nickyawesome821.github.io/Marathon-game/" },
-    { name:"Brick Game",         folder:"BrickGame",       github:"https://deabiba1.github.io/spacegame/" },
-    { name:"Block Break",        folder:"BlockBreak",      github:"https://amir-suckra.github.io/BlockBreak/" },
-    { name:"PokeBerry Catcher",  folder:"PokeBerryCatcher",github:"https://timisverycool-ui.github.io/BerryCatcher/" },
-    { name:"Jelly Fish",         folder:"JellyFish",       github:"https://sallyrubin724.github.io/SpongebobGame/" },
-    { name:"Music Notes",        folder:"MusicNotes",      github:"https://nicholasrozenblit-wq.github.io/siteReading/" },
-    { name:"Zombie Run",         folder:"ZombieRun",       github:"https://jacyag125.github.io/Zombie-Run/" },
-    { name:"Charging Chaos",     folder:"ChargingChaos",   github:"https://gurvinder1027.github.io/ChargerChaos/" },
-    { name:"Yahtzee",            folder:"Yahtzee",         github:"https://gianna-lobue.github.io/Yahtzee-/" },
-    { name:"Surfing Game",       folder:"SurfingGame",     github:"https://dylanjhub.github.io/Surf-Rider/" },
-    { name:"Santa Game",         folder:"SantaGame",       github:"https://jamgil27-glitch.github.io/Santa-Game/" },
-    { name:"Mewtwo Survival",    folder:"MewtwoSurvival",  github:"https://andrewhockey65-pixel.github.io/MewtwoSurvival/" }
+    { name:"Pokemon Game", folder:"Pokemon", github:"https://makb0925.github.io/Pokemon_Game" },
+    { name:"Stockle", folder:"Stockle", github:"https://sebbra26-creator.github.io/STOCKLE" },
+    { name:"Dolphin Pop", folder:"DolphinPop", github:"https://clajoo27.github.io/Dolphin-Pop/" },
+    { name:"Car Race", folder:"CarRace", github:"https://tyler-bergman.github.io/Final-Project/" },
+    { name:"BasketBall Game", folder:"Basketball", github:"https://yurihan08.github.io/BasketballGame/" },
+    { name:"Maze Run", folder:"MazeGame", github:"https://serenego127.github.io/mazeRun/" },
+    { name:"Human Benchmark", folder:"HumanBenchmark", github:"https://thejeo27.github.io/HumanBenchmark/" },
+    { name:"Doodle Jump", folder:"DoodleJump", github:"https://george123-cloud.github.io/DoodleJump/" },
+    { name:"Cannon BBall", folder:"CannonBall", github:"https://jalen-hall.github.io/CannonBBALL/" },
+    { name:"Ravenous Randy", folder:"RavenousRandy", github:"https://shinwin124.github.io/GameForCompSci/" },
+    { name:"Super Striker", folder:"SuperStriker", github:"https://miguelyangel515-svg.github.io/Super-Striker-game/" },
+    { name:"Marathon Race", folder:"MarathonRace", github:"https://nickyawesome821.github.io/Marathon-game/" },
+    { name:"Brick Game", folder:"BrickGame", github:"https://deabiba1.github.io/spacegame/" },
+    { name:"Block Break", folder:"BlockBreak", github:"https://amir-suckra.github.io/BlockBreak/" },
+    { name:"PokeBerry Catcher", folder:"PokeBerryCatcher", github:"https://timisverycool-ui.github.io/BerryCatcher/" },
+    { name:"Jelly Fish", folder:"JellyFish", github:"https://sallyrubin724.github.io/SpongebobGame/" },
+    { name:"Music Notes", folder:"MusicNotes", github:"https://nicholasrozenblit-wq.github.io/siteReading/" },
+    { name:"Zombie Run", folder:"ZombieRun", github:"https://jacyag125.github.io/Zombie-Run/" },
+    { name:"Charging Chaos", folder:"ChargingChaos", github:"https://gurvinder1027.github.io/ChargerChaos/" },
+    { name:"Yahtzee", folder:"Yahtzee", github:"https://gianna-lobue.github.io/Yahtzee-/" },
+    { name:"Surfing Game", folder:"SurfingGame", github:"https://dylanjhub.github.io/Surf-Rider/" },
+    { name:"Santa Game", folder:"SantaGame", github:"https://jamgil27-glitch.github.io/Santa-Game/" },
+    { name:"Mewtwo Survival", folder:"MewtwoSurvival", github:"https://andrewhockey65-pixel.github.io/MewtwoSurvival/" }
 ];
 
 let activeGame = null;
 let currentRatings = {};
 let ratingsCache = {};
+let userRatedGames = new Set(); // Tracks which games THIS device rated
+
+// Get unique device ID (stored in browser localStorage)
+function getDeviceId() {
+    let deviceId = localStorage.getItem('game_rating_device_id');
+    if (!deviceId) {
+        deviceId = 'device_' + Math.random().toString(36).substr(2, 16) + '_' + Date.now();
+        localStorage.setItem('game_rating_device_id', deviceId);
+    }
+    return deviceId;
+}
+
+const deviceId = getDeviceId();
 
 const headers = {
     'Content-Type': 'application/json',
@@ -207,43 +218,33 @@ const headers = {
     'Authorization': 'Bearer ' + SUPABASE_KEY
 };
 
-async function testPermissions() {
-    showToast('Testing database...', 'info');
-    try {
-        const readTest = await fetch(`${SUPABASE_URL}/rest/v1/ratings?limit=1`, { headers });
-        const writeTest = await fetch(`${SUPABASE_URL}/rest/v1/ratings`, {
-            method: 'POST',
-            headers: { ...headers, 'Prefer': 'return=minimal' },
-            body: JSON.stringify({ gameFolder: '_test', gameName: 'Test', fun: 5, creativity: 5, difficulty: 5, polish: 5 })
-        });
-        
-        if (readTest.ok && writeTest.ok) {
-            showToast('✅ Database working!', 'success');
-            document.getElementById('errorBanner').classList.remove('show');
-        } else {
-            showToast(`❌ Permissions error! Run SQL grants.`, 'error');
-            document.getElementById('errorBanner').classList.add('show');
-        }
-    } catch(e) {
-        showToast(`❌ Error: ${e.message}`, 'error');
-    }
-}
-
+// Fetch all ratings and check which games this device has rated
 async function fetchRatings() {
     try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings?select=gameFolder,fun,creativity,difficulty,polish`, { headers });
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings?select=gameFolder,fun,creativity,difficulty,polish,device_id`, { headers });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
+        
         ratingsCache = {};
+        userRatedGames.clear();
+        
         data.forEach(r => {
+            // Track which games THIS DEVICE has already rated
+            if (r.device_id === deviceId) {
+                userRatedGames.add(r.gameFolder);
+            }
+            
+            // Calculate average ratings for display
             if (!ratingsCache[r.gameFolder]) ratingsCache[r.gameFolder] = [];
             ratingsCache[r.gameFolder].push({
                 avg: (r.fun + r.creativity + r.difficulty + r.polish) / 4
             });
         });
+        
+        console.log('Your Device ID:', deviceId);
+        console.log('Games you have rated:', Array.from(userRatedGames));
     } catch(e) {
         console.error('Fetch error:', e);
-        ratingsCache = {};
     }
 }
 
@@ -257,6 +258,10 @@ function getRatingCount(folder) {
     return ratingsCache[folder]?.length || 0;
 }
 
+function hasUserRatedThisGame(folder) {
+    return userRatedGames.has(folder);
+}
+
 async function displayGames() {
     await fetchRatings();
     const grid = document.getElementById('gameGrid');
@@ -266,6 +271,7 @@ async function displayGames() {
         const avg = getAverageRating(game.folder);
         const count = getRatingCount(game.folder);
         const stars = avg ? '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg)) : '';
+        const alreadyRated = hasUserRatedThisGame(game.folder);
         
         return `
         <div class="col">
@@ -276,23 +282,38 @@ async function displayGames() {
                          onerror="this.src='https://via.placeholder.com/120x120?text=No+Image'; this.onerror=null;">
                     <h6 class="card-title fw-bold mt-2">${game.name}</h6>
                     <div class="folder-path mb-2">${game.folder}/</div>
-                    ${avg ? `<div class="avg-display">${stars} ${avg} (${count})</div>` : '<div class="avg-display text-muted">Not rated yet</div>'}
+                    ${avg ? `<div class="avg-display">${stars} ${avg} (${count} ratings)</div>` : '<div class="avg-display text-muted">Be the first to rate!</div>'}
+                    ${alreadyRated ? '<div class="rated-badge">✓ You already rated this</div>' : ''}
                     <a href="${game.github}" class="btn btn-sm btn-outline-primary w-100 mt-2" target="_blank">▶ Play</a>
-                    <button class="btn btn-sm btn-outline-secondary w-100 mt-2" onclick="openModal(${idx})">⭐ Rate</button>
+                    <button class="btn btn-sm ${alreadyRated ? 'btn-secondary' : 'btn-outline-success'} w-100 mt-2" 
+                            onclick="openRatingModal(${idx})"
+                            ${alreadyRated ? 'disabled' : ''}>
+                        ${alreadyRated ? '✓ Rated' : '⭐ Rate This Game'}
+                    </button>
                 </div>
             </div>
         </div>`;
     }).join('');
 }
 
-function openModal(idx) {
-    activeGame = games[idx];
+function openRatingModal(idx) {
+    const game = games[idx];
+    
+    // Double check they haven't already rated this game
+    if (hasUserRatedThisGame(game.folder)) {
+        showToast('You have already rated this game on this computer!', 'error');
+        return;
+    }
+    
+    activeGame = game;
     currentRatings = {};
     document.getElementById('modalGameName').textContent = activeGame.name;
     document.getElementById('commentBox').value = '';
     
-    document.querySelectorAll('.star-rating').forEach(container => {
-        const category = container.dataset.category;
+    // Create star ratings
+    ['fun', 'creativity', 'difficulty', 'polish'].forEach(category => {
+        const container = document.querySelector(`.star-rating[data-category="${category}"]`);
+        if (!container) return;
         container.innerHTML = '';
         for (let i = 1; i <= 5; i++) {
             const star = document.createElement('span');
@@ -342,7 +363,8 @@ async function submitRating() {
         creativity: currentRatings.creativity,
         difficulty: currentRatings.difficulty,
         polish: currentRatings.polish,
-        comment: document.getElementById('commentBox').value || null
+        comment: document.getElementById('commentBox').value || null,
+        device_id: deviceId  // This prevents rating the same game again
     };
     
     try {
@@ -354,14 +376,15 @@ async function submitRating() {
         
         if (res.ok) {
             closeModal();
-            showToast('✓ Rating saved! Thanks!', 'success');
-            await displayGames();
+            showToast(`✓ You rated ${activeGame.name}! You cannot rate it again.`, 'success');
+            userRatedGames.add(activeGame.folder); // Update local tracking
+            await displayGames(); // Refresh the grid
         } else {
-            const error = await res.text();
-            showToast(`❌ Failed: ${res.status} - Permission denied!`, 'error');
+            const errorText = await res.text();
+            console.error('Submit error:', errorText);
+            showToast(`❌ Failed to save rating. ${errorText.substring(0, 100)}`, 'error');
             btn.textContent = 'Try Again';
             btn.disabled = false;
-            document.getElementById('errorBanner').classList.add('show');
         }
     } catch(e) {
         showToast(`❌ Error: ${e.message}`, 'error');
@@ -373,7 +396,7 @@ async function submitRating() {
 function showToast(msg, type) {
     const toast = document.getElementById('toast');
     toast.textContent = msg;
-    toast.style.backgroundColor = type === 'error' ? '#dc3545' : type === 'info' ? '#0d6efd' : '#198754';
+    toast.style.backgroundColor = type === 'error' ? '#dc3545' : '#198754';
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 4000);
 }
@@ -382,6 +405,7 @@ document.getElementById('ratingModal').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeModal();
 });
 
+// Start the app
 displayGames();
 setInterval(displayGames, 30000);
 </script>
