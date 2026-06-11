@@ -184,6 +184,7 @@
 const SUPABASE_URL = 'https://ckvyqutltebnamvoyzrc.supabase.co/rest/v1/';
 const SUPABASE_KEY = 'sb_publishable_GiVb88ghATn8_0PLqEAasw_Vhf13eTD';
 
+// ===== THE CORRECT GAMES LIST (23 games with GitHub links) =====
 const games = [
     { name:"Pokemon Game",       folder:"Pokemon",         github:"https://makb0925.github.io/Pokemon_Game" },
     { name:"Stockle",            folder:"Stockle",         github:"https://sebbra26-creator.github.io/STOCKLE" },
@@ -209,6 +210,7 @@ const games = [
     { name:"Santa Game",         folder:"SantaGame",       github:"https://jamgil27-glitch.github.io/Santa-Game/" },
     { name:"Mewtwo Survival",    folder:"MewtwoSurvival",  github:"https://andrewhockey65-pixel.github.io/MewtwoSurvival/" }
 ];
+// =============================================================
 
 let activeGame = null;
 let currentStars = { fun:0, creativity:0, difficulty:0, polish:0 };
@@ -221,18 +223,20 @@ const headers = {
 };
 
 async function fetchAverages() {
-    const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/ratings?select=gameFolder,fun,creativity,difficulty,polish`,
-        { headers }
-    );
-    const rows = await res.json();
-    avgCache = {};
-    rows.forEach(r => {
-        if (!avgCache[r.gameFolder]) avgCache[r.gameFolder] = { sum:0, count:0 };
-        const avg = (r.fun + r.creativity + r.difficulty + r.polish) / 4;
-        avgCache[r.gameFolder].sum += avg;
-        avgCache[r.gameFolder].count += 1;
-    });
+    try {
+        const res = await fetch(`${SUPABASE_URL}/ratings?select=gameFolder,fun,creativity,difficulty,polish`, { headers });
+        if (!res.ok) throw new Error('Fetch failed');
+        const rows = await res.json();
+        avgCache = {};
+        rows.forEach(r => {
+            if (!avgCache[r.gameFolder]) avgCache[r.gameFolder] = { sum:0, count:0 };
+            const avg = (r.fun + r.creativity + r.difficulty + r.polish) / 4;
+            avgCache[r.gameFolder].sum += avg;
+            avgCache[r.gameFolder].count += 1;
+        });
+    } catch(e) {
+        console.warn('Could not fetch averages:', e);
+    }
 }
 
 function getAvg(folder) {
@@ -255,13 +259,10 @@ async function displayGames() {
     grid.innerHTML = games.map((g, i) => {
         const avg = getAvg(g.folder);
         const count = avgCache[g.folder]?.count || 0;
-        const cardStyle = avg
-            ? 'background-color:#d1e7dd;border-color:#198754;'
-            : 'background-color:#f8d7da;border-color:#dc3545;';
         const stars = avg ? '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg)) : '';
         return `
         <div class="col">
-            <div class="card game-card h-100" style="${cardStyle}">
+            <div class="card game-card h-100">
                 <div class="card-body text-center">
                     <div class="card-icon mb-2">
                         <img src="${escapeHtml(g.folder)}/index.png"
@@ -269,11 +270,11 @@ async function displayGames() {
                     </div>
                     <h6 class="card-title fw-bold text-dark mb-1">${escapeHtml(g.name)}</h6>
                     <div class="folder-path mb-2">${escapeHtml(g.folder)}/</div>
-                    ${avg ? `<div class="avg-display">${stars} ${avg} <span style="color:#6c757d">(${count})</span></div>` : ''}
+                    ${avg ? `<div class="avg-display">${stars} ${avg} <span style="color:#6c757d">(${count})</span></div>` : '<div class="avg-display">Not yet rated</div>'}
                     <a href="${escapeHtml(g.github)}" class="btn btn-sm btn-outline-primary w-100 mt-2" target="_blank">▶ Play</a>
-                    <button class="btn btn-sm ${avg ? 'btn-success' : 'btn-outline-secondary'} btn-rate"
+                    <button class="btn btn-sm btn-outline-secondary btn-rate"
                             onclick="openModal(${i})">
-                        ${avg ? '★ Rated · Rate again' : 'Rate this game'}
+                        Rate this game
                     </button>
                 </div>
             </div>
@@ -327,17 +328,22 @@ async function submitRating() {
         comment:    document.getElementById('commentBox').value.trim() || null
     };
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings`, {
-        method: 'POST',
-        headers: { ...headers, 'Prefer': 'return=minimal' },
-        body: JSON.stringify(payload)
-    });
+    try {
+        const res = await fetch(`${SUPABASE_URL}/ratings`, {
+            method: 'POST',
+            headers: { ...headers, 'Prefer': 'return=minimal' },
+            body: JSON.stringify(payload)
+        });
 
-    if (res.ok) {
-        closeModal();
-        showToast();
-        await displayGames();
-    } else {
+        if (res.ok) {
+            closeModal();
+            showToast();
+            await displayGames();
+        } else {
+            btn.textContent = 'Error — try again';
+            btn.disabled = false;
+        }
+    } catch(e) {
         btn.textContent = 'Error — try again';
         btn.disabled = false;
     }
@@ -349,13 +355,11 @@ function showToast() {
     setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// Close modal on overlay click
 document.getElementById('ratingModal').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
 });
 
 displayGames();
-// Refresh averages every 30 seconds
 setInterval(displayGames, 30000);
 </script>
 </body>
