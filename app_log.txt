@@ -1,1 +1,6 @@
-Your content
+
+TO-DO LIST
+When a level up occurs, create a pop up that signifies it 
+6/8 - 
+Attempt to implement a moving hoop 
+6/9 -
