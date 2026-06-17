@@ -343,8 +343,8 @@ async function displayGames() {
                     <img src="${game.folder}/index.png" class="game-icon" onerror="this.src='https://via.placeholder.com/120x120?text=No+Image'; this.onerror=null;">
                     <h6 class="card-title fw-bold mt-2">${game.name}</h6>
                     <div class="folder-path mb-2">${game.folder}/</div>
-                    ${avg ? `<div class="avg-display">${stars} ${avg} (${count} ratings)</div>` : '<div class="avg-display text-muted">Be the first to rate!</div>'}
-                    ${alreadyRated ? '<div class="rated-badge">✓ You rated this</div>' : ''}
+                       <div class="avg-display text-muted">Time to rate!</div>
+                 
                     <a href="${game.github}" class="btn btn-sm btn-outline-primary w-100 mt-2" target="_blank">▶ Play</a>
                     <button class="btn btn-sm ${alreadyRated ? 'btn-secondary' : 'btn-outline-success'} w-100 mt-2" onclick="openModal(${originalIdx})" ${alreadyRated ? 'disabled' : ''}>
                         ${alreadyRated ? '✓ Already Rated' : 'Rate Game'}
