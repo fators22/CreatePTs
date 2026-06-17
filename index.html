@@ -271,7 +271,7 @@ async function fetchRatings() {
                 ratingsCache[r.gamefolder] = [];
             }
             ratingsCache[r.gamefolder].push({
-                avg: (r.fun*1 + r.creativity*1 + r.difficulty*1 + r.polish*1 + r.overall*2) / 6
+                avg: (r.fun*1 + r.creativity*1 + r.difficulty*1 + r.polish*1 + r.overall*1) / 5
             });
         });
         
