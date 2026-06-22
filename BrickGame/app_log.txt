@@ -1,0 +1,8 @@
+Most common suggestion was that the game is too easy.
+Make the ball move faster over time.
+Add harder brick layouts.
+Reduce paddle size in later stages.
+Add obstacles or moving bricks.
+One player specifically requested different levels.
+Start with an easy level and gradually increase difficulty.
+Include unique layouts/themes for each level.

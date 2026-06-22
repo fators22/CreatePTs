@@ -1,0 +1,9 @@
+Make game longer
+Make it easier at the start
+Make it more difficult
+Make the speed change more than once
+Change the # of objects per level
+Decrease visual clutter
+
+6/8 created another level with another speedup + made game longer
+6/9 increased difficulty by incr. pufferfish speed, decr. pufferfish size, and incr. the points lost when hitting pufferfish

@@ -4,6 +4,8 @@ let bg2;
 let CannonIMG;
 let ballIMG;
 
+
+
 // game state variables
 let shooting = false;
 let misses = 0;
@@ -27,6 +29,8 @@ let Cannon = {
   h: 130,
   spd: 5,
 };
+
+let timer = 0 
 
 // invisible box that detects if the ball goes through the hoop
 let hitbox = {
@@ -53,20 +57,23 @@ function preload() {
   CannonIMG = loadImage("IMG_1095-removebg-preview.png");
   ballIMG = loadImage("download-removebg-preview.png");
 }
-
 // creates the canvas and centers all text
 function setup() {
   createCanvas(600, 600);
   textAlign(CENTER, CENTER);
+
 }
+
 
 // runs every frame and shows the correct screen
 function draw() {
+
   if (screen === "beginning") {
     StartScreen();
   } else if (screen === "instruct") {
     InstructScreen();
   } else if (screen === "game") {
+    
     GameScreen();
     Sidetoside();
     ShootCannon();
@@ -264,16 +271,27 @@ function ShootCannon() {
 
 // moves the Cannon left and right and bounces it off the walls
 function Sidetoside() {
+  if (timer > 0) {
+    fill(255, 140, 0 )
+    textFont("Arial")
+    textSize(50)
+    if (timer % 20 < 10) {
+    text("LEVEL UP!!", 300, 300);
+  }
+    timer--;
+  }else{
   if (shooting === false) {
     Cannon.x += Cannon.spd;
     if (Cannon.x >= width - Cannon.w || Cannon.x <= 0) {
       Cannon.spd *= -1;
     }
   }
+  }
 }
 
 // handles all button clicks and taps
 function touchStarted() {
+
   for (let i = 0; i < buttons.length; i++) {
     let btn = buttons[i];
 
@@ -338,18 +356,22 @@ function touchStarted() {
 function LevelUp(currentScore) {
   if (currentScore == 5 && level == 1) {
     level = 2;
+    timer =60
     Cannon.spd = 7;
   }
   if (currentScore == 10 && level == 2) {
     level = 3;
+      timer =60 
     Cannon.spd = 9;
   }
   if (currentScore == 15 && level == 3) {
     level = 4;
+       timer =60 
     Cannon.spd = 12;
   }
   if (currentScore == 20 && level == 4) {
     level = 5;
+       timer =60
     Cannon.spd = 15;
   }
   if (currentScore == 25 && level == 5) {

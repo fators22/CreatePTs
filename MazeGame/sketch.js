@@ -40,7 +40,7 @@ function preload() {
 
 // runs once when program starts, creates canvas and sets values of all variables/characters/objects
 function setup() {
-  createCanvas(1000, 1000);
+  createCanvas(1000, 1050);
   
   // define the initial screen state
   screenState = "home";
@@ -49,11 +49,11 @@ function setup() {
   // define attributes of characters/objects
   player = {
     avatar: avatar_standing,
-    x: 90,
+    x: 45,
     y: 92,
     w: 36/2,
     h: 56/2,
-    speed: 5,
+    speed: 3.5,
     lives: 3,
     hasSword: false
   };
@@ -192,10 +192,21 @@ function play() {
   
   imageMode(CENTER);
   textAlign(CENTER, CENTER);
-  image(maze, 500, 500, 900, 900);
-  drawButton(0, 100, 20,  100, 50, 20);
-  text("Lives: " + player.lives, 400, 20);
-  text("Time: " + timer, 500, 20);
+  image(maze, 500, 550, 1000, 1000);
+  drawButton(0, 55, 25, 90, 35, 20);
+  
+  fill(255);
+  textSize(30);
+  text("Lives: " + player.lives, 250, 25);
+  text("Time: " + timer, 470, 25);
+  
+  if (player.hasSword == true) {
+    text("Protection: Equipped", 800, 25);
+  }
+  else {
+    text("Protection: Not equipped", 800, 25);
+  }
+  
   
   // function to display power ups
   displayPowerUps(powerUps);
@@ -272,7 +283,7 @@ function mousePressed() {
   }
   
   if (screenState == "play") {
-    if (buttonIsClicked(0, 100, 10, 100, 50)) {
+    if (buttonIsClicked(0, 55, 25, 90, 35)) {
       screenState = buttons[0].screenState;
     }
   }
@@ -281,8 +292,8 @@ function mousePressed() {
 // -------------------- time --------------------
 // timer is subtracted by 1 every 60 frames, which is 1 second
 function timerCountdown() {
-  if (frameCount % 60 == 0 && timer > 0) { // total framecount divided by 60 - the remainder is 0 every 60 frames
-      timer--;
+  if (frameCount % 60 == 0 && !(player.lives == 0 || timer == 0 || player.x > 945)) { // total framecount divided by 60
+      timer--;                                                                        // the remainder is 0 every 60 frames
   }
 }
 
@@ -290,21 +301,26 @@ function timerCountdown() {
 // check if character touches the blue walls of maze
 // made with help from ai
 function wallCollision(element) {
-  let mazeX = map(element.x, 50, 950, 0, maze.width); // element's coordinates are in reference to screen, not the maze - at the start during setup,
-  let mazeY = map(element.y, 50, 950, 0, maze.height); // there's no maze on the screen to reference so the coordinates are adjusted in
-  let mazeW = map(element.w, 0, 900, 0, maze.width); // reference to the maze image
-  let mazeH = map(element.h, 0, 900, 0, maze.height);
+  let mazeX = map(element.x, 0, 1000, 0, maze.width); // element's coordinates are in reference to screen, not the maze - at the start during setup,
+  let mazeY = map(element.y, 50, 1050, 0, maze.height); // there's no maze on the screen to reference so the coordinates are adjusted in
+  let mazeW = map(element.w, 0, 1000, 0, maze.width); // reference to the maze image
+  let mazeH = map(element.h, 0, 1000, 0, maze.height);
     
   let current_color = {
     r: maze.get(mazeX + mazeW/2, mazeY), // gets color of a pixel on each side of the character
     l: maze.get(mazeX - mazeW/2, mazeY),
     u: maze.get(mazeX, mazeY - mazeH/2),
     d: maze.get(mazeX, mazeY + mazeH/2),
+    
+    tr: maze.get(mazeX + mazeW/2, mazeY - mazeH/2), // gets colors of pixels for each corner
+    tl: maze.get(mazeX - mazeW/2, mazeY - mazeH/2),
+    br: maze.get(mazeX + mazeW/2, mazeY + mazeH/2),
+    bl: maze.get(mazeX - mazeW/2, mazeY + mazeH/2),
   };
   
   // boolean saying whether or not the pixel is part of the blue wall by using the wall's rgba value
   let is_blue = {
-    r: current_color.r[0] == 1 && // each side of the character is accounted for again
+    r: current_color.r[0] == 1 && // each side and corner of the character is accounted for again
     current_color.r[1] == 33 &&
     current_color.r[2] == 105 &&
     current_color.r[3] == 255,
@@ -320,9 +336,84 @@ function wallCollision(element) {
     current_color.d[1] == 33 &&
     current_color.d[2] == 105 &&
     current_color.d[3] == 255,
+    
+    tr: current_color.tr[0] == 1 &&
+    current_color.tr[1] == 33 &&
+    current_color.tr[2] == 105 &&
+    current_color.tr[3] == 255,
+    tl: current_color.tl[0] == 1 &&
+    current_color.tl[1] == 33 &&
+    current_color.tl[2] == 105 &&
+    current_color.tl[3] == 255,
+    br: current_color.br[0] == 1 &&
+    current_color.br[1] == 33 &&
+    current_color.br[2] == 105 &&
+    current_color.br[3] == 255,
+    bl: current_color.bl[0] == 1 &&
+    current_color.bl[1] == 33 &&
+    current_color.bl[2] == 105 &&
+    current_color.bl[3] == 255
   };
   
   return is_blue;
+}
+
+// check if character touches the white open space of maze
+function checkForOpenSpace(element) {
+  let mazeX = map(element.x, 0, 1000, 0, maze.width);
+  let mazeY = map(element.y, 50, 1050, 0, maze.height);
+  let mazeW = map(element.w, 0, 1000, 0, maze.width);
+  let mazeH = map(element.h, 0, 1000, 0, maze.height);
+    
+  let current_color = {
+    r: maze.get(mazeX + mazeW/2, mazeY),
+    l: maze.get(mazeX - mazeW/2, mazeY),
+    u: maze.get(mazeX, mazeY - mazeH/2),
+    d: maze.get(mazeX, mazeY + mazeH/2),
+    
+    tr: maze.get(mazeX + mazeW/2, mazeY - mazeH/2),
+    tl: maze.get(mazeX - mazeW/2, mazeY - mazeH/2),
+    br: maze.get(mazeX + mazeW/2, mazeY + mazeH/2),
+    bl: maze.get(mazeX - mazeW/2, mazeY + mazeH/2),
+  };
+  
+  let is_white = {
+    r: current_color.r[0] == 255 &&
+    current_color.r[1] == 255 &&
+    current_color.r[2] == 255 &&
+    current_color.r[3] == 255,
+    l: current_color.l[0] == 255 &&
+    current_color.l[1] == 255 &&
+    current_color.l[2] == 255 &&
+    current_color.l[3] == 255,
+    u: current_color.u[0] == 255 &&
+    current_color.u[1] == 255 &&
+    current_color.u[2] == 255 &&
+    current_color.u[3] == 255,
+    d: current_color.d[0] == 255 &&
+    current_color.d[1] == 255 &&
+    current_color.d[2] == 255 &&
+    current_color.d[3] == 255,
+    
+    tr: current_color.tr[0] == 255 &&
+    current_color.tr[1] == 255 &&
+    current_color.tr[2] == 255 &&
+    current_color.tr[3] == 255,
+    tl: current_color.tl[0] == 255 &&
+    current_color.tl[1] == 255 &&
+    current_color.tl[2] == 255 &&
+    current_color.tl[3] == 255,
+    br: current_color.br[0] == 255 &&
+    current_color.br[1] == 255 &&
+    current_color.br[2] == 255 &&
+    current_color.br[3] == 255,
+    bl: current_color.bl[0] == 255 &&
+    current_color.bl[1] == 255 &&
+    current_color.bl[2] == 255 &&
+    current_color.bl[3] == 255
+  };
+  
+  return is_white;
 }
 
 // made with help from class project
@@ -352,46 +443,75 @@ function randomPosition(element) {
   }
 }
 
-// -------------------- player --------------------
+// // -------------------- player --------------------
 // moves player using arrow keys
 function movePlayer() {
-  let wallCollisionResult = wallCollision(player); // run the wall collision function for player
+  let openSpaceResult = checkForOpenSpace(player); // run the wall collision function for player
   
   if (keyIsDown(UP_ARROW)) {
     player.avatar = avatar_up;
-    if (!wallCollisionResult.u) { // if there is no wall collision on that side of the player
-      player.y -= player.speed;    // the player is allowed to move in that direction - done by changing their coordinate
+    if (openSpaceResult.u) { // if there is no wall collision on that side of the player
+      player.y -= player.speed; // the player is allowed to move in that direction - done by changing their coordinate
     }
   }
   
   if (keyIsDown(DOWN_ARROW)) {
     player.avatar = avatar_down;
-   if (!wallCollisionResult.d) {
+   if (openSpaceResult.d) {
       player.y += player.speed;
     }
   }
   
   if (keyIsDown(RIGHT_ARROW)) {
     player.avatar = avatar_right;
-    if (!wallCollisionResult.r) {
+    if (openSpaceResult.r) {
       player.x += player.speed;
     }
   }
   
   if (keyIsDown(LEFT_ARROW)) {
     player.avatar = avatar_left;
-    if (!(wallCollisionResult.l || (player.y > 90 && player.y < 95))) { // another condition: if the player isn't at start of the maze - prevents
-      player.x -= player.speed;                                         // player from going outside
+    if (openSpaceResult.l && player.x > 45) { // another condition: if the player isn't at start of the maze - prevents
+      player.x -= player.speed;               // player from going outside
     }
   }
   
-    image(player.avatar, player.x, player.y, player.w, player.h); // display the player after every iteration of the move function so that it
-                                                                  // updates once the player's coordinates change
+  // conditionals for when two arrows are pressed and player moves diagonally
+  if (keyIsDown(UP_ARROW) && keyIsDown(RIGHT_ARROW)) {
+    if (openSpaceResult.u && openSpaceResult.r) {
+      player.y -= player.speed;
+      player.x += player.speed;
+    }
+  }
+  
+  if (keyIsDown(UP_ARROW) && keyIsDown(LEFT_ARROW)) {
+    if (openSpaceResult.u && openSpaceResult.l) {
+      player.y -= player.speed;
+      player.x -= player.speed;
+    }
+  }
+  
+  if (keyIsDown(DOWN_ARROW) && keyIsDown(RIGHT_ARROW)) {
+    if (openSpaceResult.d && openSpaceResult.r) {
+      player.y += player.speed;
+      player.x += player.speed;
+    }
+  }
+  
+  if (keyIsDown(DOWN_ARROW) && keyIsDown(LEFT_ARROW)) {
+    if (openSpaceResult.d && openSpaceResult.l) {
+      player.y += player.speed;
+      player.x -= player.speed;
+    }
+  }
+  
+  image(player.avatar, player.x, player.y, player.w, player.h); // display the player after every iteration of the move function so that it
+                                                                // updates once the player's coordinates change
 }
 
 // end game when player gets to end of the maze or runs out of lives/time, displays different game over texts depending on result
 function endGame() {
-  if (player.x == 900 && (player.y > 905 && player.y < 910)) {
+  if (player.x > 945) {
     // characters stop moving
     player.speed = 0;
     alien.speed = 0;
@@ -512,7 +632,7 @@ function loseLife(enemy_list) {
       }
       
       if (player.lives > 0) {
-        player.speed = 5;
+        player.speed = 3.5;
       }
     }
   }

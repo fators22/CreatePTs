@@ -1,0 +1,101 @@
+High Priority (Most Common Feedback)
+1. Adjust Game Difficulty
+Tasks:
+Reduce difficulty scaling in later levels.
+Slow down object fall speed in early levels.
+Make reaching 100% charge slightly easier.
+Reduce punishment from lightning bolts.
+Test level progression to ensure difficulty feels fair.
+Mentioned by players:
+"Later levels were impossible."
+"Too hard."
+"I would want the game to be a little easier to win."
+"Slower first few levels."
+
+2. Improve Instructions / Onboarding
+Tasks:
+Create a short tutorial screen before gameplay.
+Clearly explain:
+What helps charge the battery.
+What hurts the battery.
+How to win.
+How levels increase difficulty.
+Add visual examples of good vs. bad objects.
+Mentioned by players:
+"The instructions are a bit confusing."
+"Maybe clearer instructions."
+Lower scores on understanding how to play immediately.
+
+3. Improve Controls and Hitboxes
+Tasks:
+Increase phone collision accuracy.
+Adjust hitboxes to better match object visuals.
+Test controls on multiple devices.
+Improve touch responsiveness.
+Mentioned by players:
+"The hit boxes of the phone."
+"Easier controls."
+
+Medium Priority
+4. Add More Variety
+Tasks:
+Add new collectible objects.
+Add new hazards besides viruses/lightning.
+Add power-ups.
+Add unique level mechanics.
+Add different backgrounds or themes.
+Mentioned by players:
+"Add other objects besides the two."
+"Maybe more things falling from sky."
+"Different levels."
+"Power ups."
+"Different backgrounds."
+
+5. Improve Visual Quality
+Tasks:
+Upgrade sprite quality.
+Add particle effects.
+Improve animations.
+Add more visual feedback when collecting or losing charge.
+Mentioned by players:
+"Better quality."
+
+Low Priority
+6. Add More Replayability
+Tasks:
+Add level selection.
+Add endless mode.
+Add score tracking.
+Add achievements.
+Add randomized events.
+Mentioned by players:
+"Add something that makes it less repetitive."
+"Different each time."
+"Different levels."
+
+Keep These Features
+Players consistently praised these elements, so avoid changing them significantly:
+✅ Challenging gameplay
+✅ Difficulty increasing over time
+✅ Simple and easy-to-understand concept
+✅ Battery charging mechanic
+✅ Virus hazard concept
+✅ Fast-paced gameplay
+✅ Level progression system
+✅ Visual shrinking mechanic
+
+Recommended Development Order
+Balance difficulty
+Improve instructions/tutorial
+Fix controls and hitboxes
+Add new objects and hazards
+Add power-ups and level variety
+Improve visuals and polish
+Add replayability features (endless mode, achievements, etc.)
+
+# Final Drill 7
+One of the biggest issues was game balancing, so I decided to focus on the speed factors in game, both speed of phone and speed of falling objects. I decided that I would lower the random speeds to 5-7 originally, and then 7-9 as they reset, and this would run throughout my entire game in all levels, so with lower speeds gameplay can feel less intense and more playable
+
+# Final Drill 8
+To work on game balance more, I decided to make the objects smaller after they reach a certain level, which is level 4. Before, there was still a shrink in size, so it was harder to catch objects, but with the amount of objects in the screen, it was flooded and messy. So, by decreasing the size I can make the game playable without a messy screen. To add some variation I introduced a new block, the "power outage" block which falls under the "BAD" block category, meaning it decreases battery. While the virus dropped battery % by 4, I decided to make the power outage block a rarer but more devastating block that drops % by 6 instead. Also, I edited by home screen by making instructions less wordy and more clear
+

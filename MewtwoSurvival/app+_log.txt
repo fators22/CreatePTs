@@ -1,0 +1,25 @@
+Mewtwo Survival — To-Do List
+
+GAMEPLAY — DIFFICULTY & BALANCE
+Smooth the difficulty curve — slow down the speed ramp
+    Multiple players said it became 'too fast' and 'overwhelming' late-game
+
+Reduce how many objects appear on screen at once
+    'Too cluttered' came up in 2+ responses
+
+Simplify or display point values in-game so they're easy to remember
+    One player said it was 'too hard to remember all the point values'
+
+CONTROLS & MOVEMENT
+Add up/down movement
+    Currently Mewtwo can only move side to side — requested by 2 players
+
+Improve hitbox accuracy
+    'More accurate hitbox' mentioned directly in feedback
+
+FEATURES TO ADD
+
+Task: Vary damage per attack / per enemy type
+    'Different players so damage varies based on attack'
+Done: 6/9 added new characters
+

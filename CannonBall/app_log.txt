@@ -1,0 +1,9 @@
+TO-DO LIST:
+When a level up occurs, create a pop up that signifies it.
+Attempt to implement a moving hoop.
+
+COMPLETED:
+Task number one was done, I got assistnace from Ms.Orsun in making a pop up on the screen 
+I improved task number one by making blink on and off adding a cooler look to the game.
+Regarding task number 2, the hoop is connected to my whole background, so to make it move I would have to change the whole outlook of my game. I will not be doing this 
+I instead I added a soundtrack to my game.

@@ -1,0 +1,7 @@
+To-do:
+Fix player movement, make sure it always moves instead of getting stuck
+Lower player speed
+Make timer stop correctly in all scenarios after game ends
+Make top bar with stats cleaner and easier to read
+Add indicator stating whether player has sword or not
+Resize maze to better fit the screen

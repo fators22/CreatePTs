@@ -2,10 +2,13 @@
 let state = "start";
 let score = 0;
 let lives = 3;
+let level = 1;
+let maxLevel = 5;
+
 //Ball object with postion, speed, and radius
-let ball = { x: 400, y: 350, speedx: 4, speedy: -4, r: 10 };
+let ball = { x: 400, y: 350, speedx: 7, speedy: -7, r: 10 };
 //Paddle object with postion, size, and movement speed
-let paddle = { x: 300, y: 460, w: 120, h: 14, speed: 5 };
+let paddle = { x: 300, y: 460, w: 120, h: 14, speed: 10 };
 
 //List that stores all of the block objects *filled in creatBlocks function
 let blocks =[];
@@ -19,7 +22,7 @@ function setup() {
 function createBlocks() {
   blocks = [];
 
-  let rows = 3;
+  let rows = 2 + level; // more rows per level
   let cols = 8;
 
   for (let r = 0; r < rows; r++) {
@@ -38,24 +41,33 @@ function createBlocks() {
 //Required Procedure
 //Loops through blocks, check collisions, removes blocks, and updates score
 
-function BlocksAndScore(pointsPerBlock){
-   for (let i = 0; i < blocks.length; i++) {
+function BlocksAndScore(pointsPerBlock) {
+  for (let i = 0; i < blocks.length; i++) {
     let b = blocks[i];
 
     if (b.visible) {
       fill(255, 150, 0);
       rect(b.x, b.y, b.w, b.h);
 
-      // Collision with ball
+      //Calculate the ball's edges for cleaner detection
+      let ballLeft = ball.x - ball.r;
+      let ballRight = ball.x + ball.r;
+      let ballTop = ball.y - ball.r;
+      let ballBottom = ball.y + ball.r;
+
+      //Check if the ball overlaps with the block's rectangle
       if (
-        ball.x + ball.r> b.x &&
-        ball.x + ball.r< b.x + b.w &&
-        ball.y + ball.r> b.y &&
-        ball.y + ball.r < b.y + b.h
+        ballRight > b.x &&          
+        ballLeft < b.x + b.w &&       
+        ballBottom > b.y &&          
+        ballTop < b.y + b.h    
       ) {
         b.visible = false;
-        ball.speedy *= -1;
+        ball.speedy *= -1;            // Bounce the ball vertically
         score += pointsPerBlock;
+        
+        // Break out of the loop so it only hits one block per frame
+        break; 
       }
     }
   }
@@ -75,15 +87,23 @@ function checkWallBounce() {
 
 //Checks if ball hits the paddle
 function checkPaddleBounce() {
+  // Calculate the ball's edges
+  let ballLeft = ball.x - ball.r;
+  let ballRight = ball.x + ball.r;
+  let ballTop = ball.y - ball.r;
+  let ballBottom = ball.y + ball.r;
+
+  // Check if the ball overlaps with the paddle's rectangle
   if (
-    ball.y + ball.r >= paddle.y &&   // bottom of ball hits top of paddle
-    ball.y < paddle.y &&             // ball is above paddle
-    ball.x > paddle.x &&             
-    ball.x < paddle.x + paddle.w
+    ballRight > paddle.x &&            // Ball's right edge passes paddle's left edge
+    ballLeft < paddle.x + paddle.w &&   // Ball's left edge is before paddle's right edge
+    ballBottom > paddle.y &&           // Ball's bottom edge passes paddle's top edge
+    ballTop < paddle.y + paddle.h      // Ball's top edge is before paddle's bottom edge
   ) {
-    //This code was generated using ChatGPT to move ball above paddle (prevents sticking)
+    // Prevent the ball from getting stuck inside the paddle
     ball.y = paddle.y - ball.r;
 
+    // Reverse vertical direction
     ball.speedy *= -1;
   }
 }
@@ -113,6 +133,7 @@ function startScreen() {
   background(0);
 
   textAlign(CENTER);
+  textStyle(NORMAL);
   fill(255);
   textSize(60);
   textStyle(BOLD);
@@ -127,7 +148,7 @@ function startScreen() {
 
 //Main Game Logic
 function gameScreen() {
-  background(61, 117, 145);
+  background(20, 30, 45);
   
   //move the paddle
   movePaddle();
@@ -151,17 +172,23 @@ function gameScreen() {
   BlocksAndScore(1);
 
   
-  //Score and Lives
+  //Score, Lives, and Level
   fill(255);
-  textSize(20);
+  textSize(30);
   text("Score:" + score, 70,30);
   text("Lives:"+lives, 700,30);
+  text("Level:" + level, width / 2, 30);
   
-  //This code was generated using Gemini to end the game when all the blocks are broken
+  //Check if all blocks are cleared
   let remainingBlocks = blocks.filter(b => b.visible).length;
-if (remainingBlocks === 0) {
-  state = "end";
-}
+  if (remainingBlocks === 0) {
+    if (level < maxLevel) {
+      level++;
+      nextLevel();
+    } else {
+      state = "end";
+    }
+  }
 
   if (ball.y > height) {
     lives--;
@@ -169,14 +196,32 @@ if (remainingBlocks === 0) {
     // Reset ball
     ball.x = 400;
     ball.y = 350;
-    ball.speedx = 4;
-    ball.speedy = -4;
+    ball.speedx = 7;
+    ball.speedy = -7;
 
     if (lives <= 0) {
       state = "end";
     }
   }
   
+}
+
+//Sets up the next level: regenerates blocks and speeds up the ball
+function nextLevel() {
+  createBlocks();
+
+  ball.x = 400;
+  ball.y = 350;
+
+  let direction;
+  if (ball.speedx > 0) {
+    direction = 1;
+  } else {
+    direction = -1;
+  }
+  ball.speedx = direction * (7 + level);
+
+  ball.speedy = -(7 + level);
 }
 
 //End screen UI
@@ -186,7 +231,12 @@ function endScreen() {
   textAlign(CENTER);
   fill(255);
   textSize(50);
-  text("GAME OVER", width / 2, 200);
+
+  if (lives <= 0) {
+    text("GAME OVER", width / 2, 200);
+  } else {
+    text("YOU WIN!", width / 2, 200);
+  }
 
   textSize(25);
   text("Score: " + score, width / 2, 260);
@@ -232,11 +282,12 @@ function mousePressed() {
 function resetGame() {
   score = 0;
   lives = 3;
+  level = 1;
 
   ball.x = 400;
   ball.y = 350;
-  ball.speedx = 4;
-  ball.speedy = -4;
+  ball.speedx = 7;
+  ball.speedy = -7;
 
   createBlocks(); // reset blocks
 }

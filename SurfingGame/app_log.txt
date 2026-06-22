@@ -1,0 +1,24 @@
+TODO LIST:
+🔴 High Priority (Most Common Issues)
+☐ Add an Instructions Screen
+Mentioned by multiple testers
+Explain controls (WASD or Arrow Keys)
+Explain objective (avoid sharks/obstacles)
+Explain how scoring works
+Explain any special obstacles or power-ups
+Why: Several players said they didn't understand the game immediately or wanted instructions.
+
+☐ Add Screen Boundaries / Player Constraints
+Mentioned by multiple testers
+Prevent the surfer from moving off-screen
+Prevent players from going above obstacles
+Keep the character within the game area
+Why: Players can currently avoid obstacles by leaving the play area and get free points.
+
+☐ Fix Collision Detection / Hitboxes
+Mentioned by multiple testers
+Reduce oversized hitboxes
+Make collisions feel more accurate
+Ensure players only lose when visibly touching obstacles
+Why: Players felt collisions were unfair.
+

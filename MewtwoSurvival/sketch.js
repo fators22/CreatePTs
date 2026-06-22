@@ -1,5 +1,6 @@
 // declare gamestate, we need the opening screen
 let gameState="startGameScreen";
+let selectedCharacter="";
 
 //Mewtwo gifs
 let mewtwoX,mewtwoY;
@@ -12,6 +13,12 @@ let heals=[];
 let healImages=[];
 let attacks=[];
 let attackImages=[];
+
+//choose player
+let player={
+  maxHP:300,
+  speed:10
+};
 
 
 
@@ -33,18 +40,18 @@ let level;
 
 function preload(){
   // load the images
-inGameBackground=loadImage("images/backgroundpokemon.png");
-mewtwoX=loadImage("images/mewtwoX.gif");
-mewtwo.img=loadImage("images/mewtwo.gif");
-mewtwoY=loadImage("images/MewtwoY.gif");
-gameOver=loadImage("images/gameOver.png");
-auraSphere=loadImage("images/aurasphere.png");
-bubble=loadImage("images/bubbles-png-4.png");
-oranBerry=loadImage("images/oranberry.webp");
-rock=loadImage("images/rock.webp");
-shadowBall=loadImage("images/shadowball.png");
-sitrusBerry=loadImage("images/sitrusberry.png");
-superPotion=loadImage("images/superpotion.png");
+inGameBackground=loadImage("backgroundpokemon.png");
+mewtwoX=loadImage("mewtwoX.gif");
+mewtwo.img=loadImage("mewtwo.gif");
+mewtwoY=loadImage("MewtwoY.gif");
+gameOver=loadImage("gameOver.png");
+auraSphere=loadImage("aurasphere.png");
+bubble=loadImage("bubbles-png-4.png");
+oranBerry=loadImage("oranberry.webp");
+rock=loadImage("rock.webp");
+shadowBall=loadImage("shadowball.png");
+sitrusBerry=loadImage("sitrusberry.png");
+superPotion=loadImage("superpotion.png");
 healImages=[oranBerry, sitrusBerry, superPotion];
 attackImages=[auraSphere, bubble, rock, shadowBall];
 
@@ -53,7 +60,7 @@ attackImages=[auraSphere, bubble, rock, shadowBall];
 function setup() {
   //make the size
   createCanvas(600, 600);
-  
+  level=1;
   //mewtwo size
  mewtwo.W=mewtwo.img.width*0.5; 
 mewtwo.H=mewtwo.img.height*0.5;
@@ -65,9 +72,12 @@ mewtwo.H=mewtwo.img.height*0.5;
 function draw() {
   background(220);
   //if statements with what screen
-   if(gameState=="startGameScreen"){
+  if(gameState=="startGameScreen"){
      startGameScreen();
    }
+  if(gameState=="characterScreen"){
+     characterScreen();
+}
   if(gameState=="inGameScreen"){
     inGameScreen();
   }
@@ -124,7 +134,7 @@ function startGameScreen(){
   
   //button detection
   if(overlap(250,530)){
-    gameState="inGameScreen";
+    gameState="characterScreen";
   hp=200;
   level=1;
   score=0;
@@ -138,7 +148,84 @@ function startGameScreen(){
   image(mewtwoX,5,200, mewtwoX.width*0.4,mewtwoX.height*0.4);
   image(mewtwoY,450,200, mewtwoY.width*0.4,mewtwoY.height*0.4);
 }
+function characterScreen(){
 
+  background(30);
+
+  fill(255);
+  textSize(35);
+  text("Choose Your Mega Evolution",60,80);
+
+  image(mewtwoX,60,150,
+        mewtwoX.width*0.4,
+        mewtwoX.height*0.4);
+
+  image(mewtwoY,340,150,
+        mewtwoY.width*0.4,
+        mewtwoY.height*0.4);
+
+  fill(255);
+
+  textSize(20);
+  text("Mega Mewtwo X",60,420);
+  text("Mega Mewtwo Y",340,420);
+
+  textSize(14);
+
+  text("200 HP",80,450);
+  text("Tank Build",80,470);
+  text("Slower Speed",80,490);
+
+  text("175 HP",360,450);
+  text("Fast Build",360,470);
+  text("Higher Risk",360,490);
+
+  fill(255);
+
+  rect(90,520,120,50);
+  rect(370,520,120,50);
+
+  fill(0);
+  textSize(18);
+
+  text("Choose",115,550);
+  text("Choose",395,550);
+
+  if(overlap(90,520)){
+      chooseMewtwoX();
+  }
+
+  if(overlap(370,520)){
+      chooseMewtwoY();
+  }
+}
+function chooseMewtwoX(){
+
+  selectedCharacter="X";
+
+  mewtwo.img=mewtwoX;
+
+  player.maxHP=200;
+  player.speed=8;
+
+  hp=player.maxHP;
+
+  gameState="inGameScreen";
+}
+
+function chooseMewtwoY(){
+
+  selectedCharacter="Y";
+
+  mewtwo.img=mewtwoY;
+
+  player.maxHP=175;
+  player.speed=12;
+
+  hp=player.maxHP;
+
+  gameState="inGameScreen";
+}
 function inGameScreen(){
   background(inGameBackground);
   moveMewtwo();
@@ -195,10 +282,16 @@ function overlap(x, y){
 function moveMewtwo(){
   image(mewtwo.img, mewtwo.X,mewtwo.Y, mewtwo.W, mewtwo.H);
   if(keyIsDown(LEFT_ARROW)){
-    mewtwo.X-=mewtwo.S
+    mewtwo.X-=player.speed
   }
  if(keyIsDown(RIGHT_ARROW)){
-    mewtwo.X+=mewtwo.S
+    mewtwo.X+=player.speed
+ }
+  if(keyIsDown(UP_ARROW)){
+    mewtwo.Y-=player.speed
+  }
+ if(keyIsDown(DOWN_ARROW)){
+    mewtwo.Y+=player.speed
  }
   if(mewtwo.X<-10){
     mewtwo.X=-10;
@@ -206,9 +299,15 @@ function moveMewtwo(){
   if(mewtwo.X>500){
     mewtwo.X=500;
   }
+  if(mewtwo.Y>500){
+    mewtwo.Y=500;
+  }
+  if(mewtwo.Y<-10){
+    mewtwo.Y=-10;
+  }
 }
 function makeHeals(){
-  for (let i=0; i<2+level; i++){
+  for (let i=0; i<min(3+level,8); i++){
     let h=healImages[floor(random(healImages.length-1))];
     let value=0;
     let points=0;
@@ -228,7 +327,7 @@ function makeHeals(){
       value+=50;
       points+=3
     }
-    let heal={x:random(width),y:random(-height),speed:random(1,3+level),size:40, img:h, value:value, points: points};
+    let heal={x:random(width),y:random(-height),speed:random(1,min(5,2+level)),size:40, img:h, value:value, points: points};
   heals.push(heal);
   }
   
@@ -253,14 +352,14 @@ if(detectHealCollision(heal)){
   heal.x=random(width);
 score+=heal.points
 }
-    if(hp>200){
-      hp=200;
-    }
+    if(hp>player.maxHP){
+  hp=player.maxHP;
+}
   }
 
 }
 function makeAttacks(){
-  for (let i=0; i<2*level; i++){
+  for (let i=0; i<min(2+level,10); i++){
     let k=attackImages[floor(random(attackImages.length-1))];
   
     
@@ -279,7 +378,7 @@ function makeAttacks(){
     else if(k===shadowBall){
       value=50
     }
-    let attack={x:random(width),y:random(-height),speed:random(1,3+level),size:40, img:k, value: value};
+    let attack={x:random(width),y:random(-height),speed:random(1,min(5,2+level)),size:40, img:k, value: value};
   attacks.push(attack);
   }
   
@@ -298,7 +397,7 @@ function moveAttacks(){
   image(attack.img, attack.x, attack.y, attack.size, attack.size);
 
     if(detectAttackCollision(attack)){
-  hp = hp-attack.value;  
+  hp -= getDamage(attack); 
   attack.y = -attack.size;
   attack.x=random(width);
   
@@ -312,19 +411,19 @@ function moveAttacks(){
 
 //AI gave me inspiration for helping my detect collision
 function detectHealCollision(heal){
-  let xOverlap=mewtwo.X+25 < heal.x + heal.size && heal.x < mewtwo.X+25 + mewtwo.W-50;
-  let yOverlap=mewtwo.Y+40 < heal.y + heal.size && heal.y < mewtwo.Y+50 + mewtwo.H-50;
+  let xOverlap=mewtwo.X+25 < heal.x + heal.size && heal.x+15 < mewtwo.X+25 + mewtwo.W-50;
+  let yOverlap=mewtwo.Y+40 < heal.y + heal.size && heal.y+15 < mewtwo.Y+50 + mewtwo.H-50;
   
   return xOverlap && yOverlap
 }
 function detectAttackCollision(attack){
-  let xOverlap=mewtwo.X+25 < attack.x + attack.size && attack.x < mewtwo.X+25 + mewtwo.W-50;
-  let yOverlap=mewtwo.Y+40 < attack.y + attack.size && attack.y < mewtwo.Y+50 + mewtwo.H-50;
+  let xOverlap=mewtwo.X+25 < attack.x + attack.size && attack.x+15 < mewtwo.X+25 + mewtwo.W-50;
+  let yOverlap=mewtwo.Y+40 < attack.y + attack.size && attack.y+15 < mewtwo.Y+50 + mewtwo.H-50;
   
   return xOverlap && yOverlap
 }
 function updateLevel(){
-if(score>=25*level){
+if(score>=50*level){
   level++;
   heals = [];
   attacks = [];
@@ -332,6 +431,29 @@ if(score>=25*level){
   makeAttacks();
 }
 }
+function getDamage(attack){
+
+  if(selectedCharacter=="X"){
+
+    if(attack.img===auraSphere) return 5;
+    if(attack.img===bubble) return 10;
+    if(attack.img===rock) return 20;
+    if(attack.img===shadowBall) return 40;
+
+  }
+
+  if(selectedCharacter=="Y"){
+
+    if(attack.img===auraSphere) return 15;
+    if(attack.img===bubble) return 20;
+    if(attack.img===rock) return 30;
+    if(attack.img===shadowBall) return 60;
+
+  }
+
+  return attack.value;
+}
+
 //Images credit
 //Mewtwo Y - https://www.smogon.com/forums/threads/lgpe-metagame-megathread.3754242/
 //aurasphere - https://www.deviantart.com/venjix5/art/Aura-Sphere-2-763841366

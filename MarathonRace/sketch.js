@@ -8,7 +8,7 @@ var state='start'
 let runnerImage
 let coneImage
 var pSize=40
-var pSpeed=5
+var pSpeed=3
 let pX=50
 let pY=H/2
 var obstacles=[]
@@ -49,7 +49,7 @@ background(150)
   drawButton(W/2 -90, 300, 180,50, "Start", color(30,100,226))
 }
 function gameScreen(){
-  background(240)
+  drawStreet()
   movePlayer()
   moveObstacles()
   moveRunners()
@@ -68,8 +68,8 @@ function movePlayer(){
     distanceKm = min(distanceKm,totalD);
 }
   if(keyIsDown(LEFT_ARROW)) pX -= pSpeed;
-  pX = constrain(pX,0,W);
-  pY = constrain(pY,0,H);
+ pX = constrain(pX, pSize/2, W - pSize/2);
+pY = constrain(pY, 70 + pSize/2, H - 70 - pSize/2);
   imageMode(CENTER);
   image(runnerImage,pX,pY,pSize,pSize);
 }
@@ -100,12 +100,43 @@ function moveRunners(){
     }
   }
 }
+function drawStreet(){
+  background(80,180,80);
+
+  // road
+  fill(90);
+  rect(0,50,W,H-100);
+
+  // side lines
+  stroke(255);
+  strokeWeight(3);
+  line(0,70,W,70);
+  line(0,H-70,W,H-70);
+
+  // center dashed line
+  stroke(255,255,0);
+  for(let x=0;x<W;x+=50){
+    line(x,H/2,x+25,H/2);
+  }
+
+  noStroke();
+}
 function drawFinishLine(){
-  fill(100,100,40);
-  rect(finishline.x,finishline.y,20,240);
-  if(pX+pY/2>finishline.x){
-    lvl++
-    if(lvl>3){
+  // finish line across the road
+  fill(255);
+  rect(W-20, 70, 20, H-140);
+
+  // checkerboard pattern
+  fill(0);
+  for(let y = 70; y < H-70; y += 20){
+    rect(W-20, y, 10, 10);
+    rect(W-10, y+10, 10, 10);
+  }
+
+  if(pX + pSize/2 >= W-20){
+    lvl++;
+
+    if(lvl > 3){
       endGame(true);
     }
     else{
@@ -151,13 +182,13 @@ function resetLvl(){
     y: random(50,300)
   };
   obstacles = [];
-  for(let i=0;i<lvl+2;i++){
-    obstacles.push({
-      x:random(200,550),
-      y:random(50,350),
-      size:35
-    });
-  }
+ for(let i=0; i<lvl*3+2; i++){
+  obstacles.push({
+    x: random(200,550),
+    y: random(50,350),
+    size:35
+  });
+}
   runners = [];
   for(let i=0;i<lvl;i++){
     runners.push({
@@ -179,14 +210,15 @@ function reset(){
 
 function winScreen(){
   background(200,255,200);
-  textFont('Times New Roman')
+  textFont('Times New Roman');
   textAlign(CENTER);
   textSize(40);
   text("You Finished!",W/2,140);
-  finalT = floor((millis()-startT)/1000);
+
   textSize(18);
-  text('Final Time: '+finalT+' seconds',W/2,210);
+  text('Final Time: ' + finalT + ' seconds',W/2,210);
   text("Distance: 42.195 km",W/2,240);
+
   drawButton(W/2-90,300,180,50,"Play Again",color(100,240,20));
 }
 
@@ -236,6 +268,12 @@ function checkClick(bx,by,bw,bh){
 }
 
 function endGame(won){
-  if(won) state='win';
-  else state="lose";
+  finalT = floor((millis() - startT) / 1000);
+
+  if(won){
+    state = 'win';
+  }
+  else{
+    state = 'lose';
+  }
 }

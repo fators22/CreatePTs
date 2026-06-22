@@ -1,0 +1,29 @@
+**Super Striker – To-Do List**
+
+### Gameplay
+
+* Make the difficulty increase more gradually between levels.
+* Balance enemy speed and obstacles so each level feels fair.
+* Add a "Level Up!" message when the player advances to a new level.
+
+### Visual Improvements
+
+* Add boxes/borders around the level display and other UI elements.
+* Improve the overall appearance with better colors, fonts, and spacing.
+* Add simple animations or effects when scoring or leveling up.
+* Make the game screen look more polished and organized.
+
+### Interface
+
+* Create a clearer level indicator.
+* Improve the scoreboard display.
+* Make buttons and menus more visually appealing.
+
+### Feedback from Testing
+
+* Most classmates said the game was already fun and enjoyable to play.
+* Few improvements were suggested, so focus mainly on visual upgrades and smoother level progression.
+
+Overall Improvements: 
+I made the levels increase in difficulty as you level up as well as adding a text that says level up in red in the middle of the screen when the next level is reached. I tailored the game to satisfy the feedback from the testers making it ready for the game show. 6/9/26-6/10/26
+I centered the screen and made it better visually appealing for the users. 6/11/26

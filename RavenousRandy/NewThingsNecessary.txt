@@ -1,0 +1,2 @@
+- Make a new screen with instructions
+- Increase number of lives

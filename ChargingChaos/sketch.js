@@ -12,6 +12,7 @@ let change= 5
 let blocksCreated = false
 let rectWidth = 0
 
+
 let GOOD = "good"
 let BAD = "bad"
 
@@ -21,6 +22,7 @@ function preload(){
   phone.img  = loadImage("phone.png") // LINK https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpSCawwApiuDw1oUZ30Zfi7JjBfZPyGVsHsQ&s
   goodImg = loadImage("lightning.png") // LINK https://emojiisland.com/cdn/shop/products/voltage_emoji_icon_png_large.png?v=1571606089
   badImg = loadImage('virus.png') // LINK https://ih1.redbubble.net/image.1442467605.5215/flat,750x1000,075,t.jpg
+  worstImg = loadImage('poweroutage.png')
 }
 
 function setup() {
@@ -29,6 +31,8 @@ function setup() {
 }
 
 function draw() {
+  
+ movePhone(); 
   textFont('Trebuchet MS')
        if (gameState == "start"){
 startScreen();}
@@ -38,8 +42,7 @@ playScreen();}
 winScreen();}
   else if (gameState == "lose"){ 
 loseScreen();}
-  
-movePhone();
+    
 }
 
 
@@ -57,7 +60,7 @@ function startScreen(){
   textSize(30)
   text("Play", 212, 513)
   fill(255)
-  rect(95,110,300,350)
+  rect(25,110,450,350)
   rules();
 }
 
@@ -97,7 +100,7 @@ background(150,150,150)
   fill(255)
   text(change +"%", 53,47.5)
   
-  if(collisionCounter >= level*10){
+  if(collisionCounter >= level*8){
     level++
     collisionCounter = 0;
     
@@ -156,57 +159,70 @@ function rules(){
   fill(0)
   textSize(25)
   text("Objective", 185, 140)
-  text("Controls", 190, 380)
+  text("Controls", 190, 370)
   textSize(18)
-  text("-Catch the falling lightning bolts",105, 175)
-  text("to charge up battery!", 112, 195)
-  text("-Avoid the dangerous sparks!",105, 225)
-  text("-Missing bolts also drops battery", 105,255 )
-  text("-Don't let your battery hit 0%",105, 285)
-  text("-Level up overtime for difficulty",105,315)
-  text("-Reach 100% battery to win",105, 345)
-  text("-Left/Right Arrow Keys to move",105, 410)
-  text("-Or use W and A Keys to Move", 105, 440)
+  text("-Catch the lightning bolts to charge battery",75, 175)
+  
+  text("-Avoid virus and power outage or lose battery",75, 210)
+  text("-Missing bolts will also drop battery", 75,245 )
+  text("-Hit 0% and lose, or Hit 100% and win",75, 280)
+  text("-Level up overtime for difficulty",75,315)
+  
+  text("-Left/Right Arrow Keys to move",105, 400)
+  text("-Or use W and A Keys to Move", 105, 435)
 }
 
 // LISTS, FUNCTION W/ PARAMETER, MAIN GAMEPLAY, ETC...__________
 
-let phone = {x:200, y:500, w:100, h:100, img:null}
+let phone = {x:200, y:500, w:75, h:75, img:null}
 let blocks = {x:[], y:[], w:[], h:[], sp:[], type:[], img:[]}
+let powOut = {x:[], y:[], w:[], h:[], sp:[], img:[]}
 
 
 function fillList(blockLimit){
   for(let i=0; i < blockLimit; i++){
     blocks.x.push(random(20,450))
     blocks.y.push(random(-H,0))
-    blocks.sp.push(random(6+level,8+level))
+    blocks.sp.push(random(6+level,7+level))
     
     if(blockLimit>7){
-      blocks.w.push(random(30,60))
-      blocks.h.push(random(30,60))
+      blocks.w.push(random(35,65))
+      blocks.h.push(random(35,65))
     }
     else{
-      blocks.w.push(random(70,100))
-      blocks.h.push(random(70,100))
+      blocks.w.push(random(65,95))
+      blocks.h.push(random(65,95))
     }
-    if(random(10) < 5){
-      blocks.type.push(GOOD)
-    }
-    else {
-      blocks.type.push(BAD)
-    }
+    if (random(10) > 5) {
+  blocks.type.push(BAD)
+
+  // pick virus type
+  let badVariant = random(2)
+
+  if (badVariant < 1) {
+    blocks.img.push(badImg)
+  } else {
+    blocks.img.push(worstImg)
+  }
+
+} else {
+  blocks.type.push(GOOD)
+  blocks.img.push(goodImg)
 }
 }
+  }
 
 
 function makeBlocks(){
-for(let i=0; i<blocks.x.length; i++){
-  if(blocks.type[i] == GOOD){
-image(goodImg, blocks.x[i], blocks.y[i], blocks.w[i], blocks.h[i])
-}
-else if(blocks.type[i] == BAD)
-image(badImg, blocks.x[i], blocks.y[i], blocks.w[i], blocks.h[i])
-}
+  for(let i = 0; i < blocks.x.length; i++){
+    image(
+      blocks.img[i],
+      blocks.x[i],
+      blocks.y[i],
+      blocks.w[i],
+      blocks.h[i]
+    );
+  }
 }
 
 
@@ -222,43 +238,68 @@ function moveBlocks(){
     blocks.y[i] = random(-H,-50)
     blocks.x[i] = random(20,450)
     blocks.sp[i] = random(6+level,8+level)
-    blocks.type[i] = random(10) < 5 ? GOOD:BAD 
-   }
- }
+
+    
+if (random(10) < 5) {
+  blocks.type[i] = GOOD
+  blocks.img[i] = goodImg
+} else {
+  blocks.type[i] = BAD
+
+  let badVariant = random(2)
+  blocks.img[i] = badVariant < 1 ? badImg : worstImg
+}
+}
+}
 }
 
 
 function collisionCheck(){
 for (let i=0; i<blocks.x.length; i++){
+
 let xCollision = phone.x < blocks.x[i] + blocks.w[i] && phone.x + phone.w > blocks.x[i]
 let yCollision = phone.y < blocks.y[i] + blocks.h[i] && phone.y + phone.h > blocks.y[i]
 
 if (xCollision && yCollision){
   collisionCounter++
+
   if(blocks.type[i] == GOOD){
-    change+=2
+    change += floor(random(2,4))
   }
-  else{
-    change-=3
+  else if (blocks.img[i] == badImg){
+    change -= 4
   }
- blocks.y[i] = random(-H,-50)
- blocks.x[i] = random(20,450)
- blocks.sp[i] = random(6+level,8+level)
- blocks.type[i] = random(10) < 5 ? GOOD:BAD
-}
-}  
+  else if (blocks.img[i] == worstImg){
+    change -= 8
+  }
+
+  // reset after collision
+  blocks.y[i] = random(-H,-50)
+  blocks.x[i] = random(20,450)
+  blocks.sp[i] = random(6+level,8+level)
+
+  if (random(10) < 5) {
+    blocks.type[i] = GOOD
+    blocks.img[i] = goodImg
+  } else {
+    blocks.type[i] = BAD
+    let badVariant = random(2)
+    blocks.img[i] = badVariant < 1 ? badImg : worstImg
+  }
 }
 
+}
+}
 
 function movePhone(){
   
 if (keyIsDown(LEFT_ARROW) || keyIsDown(65))
   if(phone.x>-25){
-    phone.x-=10
+    phone.x-=10.75
   }   
 if (keyIsDown(RIGHT_ARROW) || keyIsDown(68))
   if(phone.x<425){
-   phone.x+=10
+   phone.x+=10.75
   }
 }
 
@@ -293,6 +334,7 @@ function resetList(){
       blocks.h = []
       blocks.sp = []
       blocks.type = []
+      blocks.img = []
 }
-//______________________________________________________________
 
+//______________________________________________________________

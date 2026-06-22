@@ -1,0 +1,17 @@
+add more instructions to the instructions tab
+Rewrite the instructions using simple language, and example 
+Add tips explaining each scoring category
+Improve graphics and make the game more visually appealing
+Add sound effects when rolling the dice or animation
+Add a Help button that players can access anytime
+A different backgrounds or themes
+Bonus or power ups to make the game fun
+Most of my feedback was players did not know how to play the game so improving instructions and teaching the rules will be priority
+
+
+** update 6/9
+fixed instructions screen 
+
+
+***update 6/11
+fixed gameplay to make the game more understandable 

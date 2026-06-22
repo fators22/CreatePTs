@@ -6,12 +6,15 @@ let stage=1;
 let score=0;
 let berries={x:[],y:[],sp:[],size:[],type:[],img:[]};
 let lives=7
-let amount=5;
+let amount=3;
 let type=["lum","mago","oran","sitrus"]
-let player={x:300,y:450,sp:10,size:150,img: null}
+let player={x:300,y:450,sp:12,size:150,img: null}
 let directionFacing="none"
 let dash={distance:200,h:400,cooldown:0,ToE:0,amount:2,active:"none",x:null}
 let spacePressed=false
+let powerUp={x:0,y:0,spx:0,spy:0,size:70,img:[],amount:1}
+let powerUpSpawned = false
+let powerUpCollected = false
 
 //Declare the image variables to be assigned as images in preload
 let gbg;
@@ -20,6 +23,7 @@ let lum;
 let mago;
 let oran;
 let sitrus;
+let rarecandy;
 
 //Load in all of the images
 function preload(){
@@ -32,12 +36,14 @@ function preload(){
   minun=loadImage('IMG_1188.png')
   plusle=loadImage('IMG_1189.png')
   lightning=loadImage('fahh.png')
+  rarecandy=loadImage('rarecandy.png')
 }
 
 //Make the berries before the game begins
 function setup() {
   createCanvas(600, 600);
   makeBerries()
+  makePowerUp()
 }
 
 //Function draw only needs the gamestate and the click states
@@ -61,7 +67,6 @@ function draw(){
     else if (gameState == "choose"){
       chooseScreen()
     }
-
   clickState=false //Ensure the clickstates stay false so that holding click does not cause multiple inputs
   spacePressed=false
 }
@@ -105,6 +110,8 @@ function gameScreen(){
   drawBerries()
   drawPlayer()
   dashing()
+  drawPowerUp()
+  homeButton()
   //Make conditions to transition to each game screen
   if(lives<=0){
     gameState="lose"
@@ -177,25 +184,29 @@ function guideScreen(){
   background(bg)
   noStroke()
   fill(255)
-  rect(width/2-120,height/2-290,250,350)
+  rect(width/2-120,height/2-290,250,400)
   textSize(15)
   fill(0)
   text("Collect berries and don't let berries", width/2-115,30)
   text("drop to the floor!", width/2-115,50)
   text("Different berries give different", width/2-115,70)
   text("scores.", width/2-115,90)
-  text("Stages increase through increments",width/2-115,110)
-  text("of 25.", width/2-115,130)
-  image(oran,width/2-115,150,lum.width*0.2,lum.height*0.2)
-  image(mago,width/2-115,190,lum.width*0.2,lum.height*0.2)
-  image(lum,width/2-115,230,lum.width*0.2,lum.height*0.2)
-  image(sitrus,width/2-115,270,lum.width*0.2,lum.height*0.2)
-  text("Oran berries give 1 point",width/2-70,170)
-  text("Mago berries give 2 points",width/2-70,210)
-  text("Lum berries give 4 points",width/2-70,250)
-  text("Sitrus berries give 5 points",width/2-70,290)
-  text("Use the arrow keys to move.",width/2-115,320)
-  text("Press spacebar for a dash!",width/2-115,340)
+  text("Stages increase after all berries are",width/2-115,110)
+  text("collected.", width/2-115,130)
+  image(oran,width/2-115,135,lum.width*0.2,lum.height*0.2)
+  image(mago,width/2-115,175,lum.width*0.2,lum.height*0.2)
+  image(lum,width/2-115,215,lum.width*0.2,lum.height*0.2)
+  image(sitrus,width/2-115,255,lum.width*0.2,lum.height*0.2)
+  text("Oran berries give 1 point",width/2-70,155)
+  text("Mago berries give 2 points",width/2-70,195)
+  text("Lum berries give 4 points",width/2-70,235)
+  text("Sitrus berries give 5 points",width/2-70,275)
+  text("Use the arrow keys or A and D to",width/2-115,310)
+  text("move.",width/2-115,330)
+  text("Hold the movement keys and press",width/2-115,350)
+  text("spacebar for a dash!", width/2-115,370)
+  image(powerUp.img[0],width/2-120,370,40,40)
+  text("Rare candies give a power up!",width/2-80,395)
   fill(255)
   rect(width/2-100,height/2+150,button.w,button.h)
   textSize(36)
@@ -209,8 +220,9 @@ function guideScreen(){
 function stageUp(){
   if(amount==0){ //Use a condition to make sure when all the berries are gone, the stage goes up
      stage++
-    amount=stage*5
+    amount=stage*3
     makeBerries()
+    makePowerUp()
      }
 }
 
@@ -218,7 +230,7 @@ function makeBerries(){
   for(let i=0;i<amount;i++){ 
     berries.x.push(random(0,560))  
     berries.y.push(random(-600,0))
-    berries.sp.push(3,5)
+    berries.sp.push(2,4)
     berries.size.push(random(50,60))
     let rando=Math.floor(random(0,4))  
     berries.type.push(type[rando])  
@@ -261,6 +273,7 @@ function chooseScreen(){
     player.img=(minun)
     gameState='game'
   }
+  homeButton()
 }
 
 function drawBerries(){
@@ -305,11 +318,11 @@ function berryDetection(index){
 
 function drawPlayer(){
     image(player.img,player.x,player.y,player.size,player.size)
-  if(keyIsDown(LEFT_ARROW) & player.x >0){
+  if((keyIsDown(LEFT_ARROW) || keyIsDown(65)) && player.x >0){
     player.x-=player.sp
     directionFacing='Left' //Direction facing variable for dashes
   }
-   else if(keyIsDown(RIGHT_ARROW) & player.x+player.size <600){
+   else if((keyIsDown(RIGHT_ARROW) || keyIsDown(68)) && player.x+player.size <600){
     player.x+=player.sp
      directionFacing='Right'
   }
@@ -317,17 +330,19 @@ function drawPlayer(){
     directionFacing='none'
 }
 function detectCollision(i){ //Function for player berry collisions
-  let xOverlap=berries.x[i]<player.x+player.size && player.x<berries.x[i]+berries.size[i]
-  let yOverlap=berries.y[i]<player.y+player.size && player.y<berries.y[i]+berries.size[i]
+  let xOverlap=berries.x[i]<player.x+player.size && player.x+50<berries.x[i]+berries.size[i]
+  let yOverlap=berries.y[i]<player.y+80 && player.y<berries.y[i]+berries.size[i]
   return xOverlap && yOverlap
   }
 function resetGame(){
   berries={x:[],y:[],sp:[],size:[],type:[],img:[]}
+  powerUp={x:0,y:0,spx:0,spy:0,size:70,img:[],amount:1}
       lives=7
   score=0
   stage=1
-  amount=5
+  amount=3
   makeBerries()
+  makePowerUp()
   dash.cooldown=0
   dash.amount=2
   player.x=300
@@ -340,16 +355,26 @@ function dashing(){ //Dash function
   if(dash.cooldown<0){ //Debug the code so that no negative numbers can show up as the dash cooldown
     dash.cooldown=0
   }
-  if(dash.cooldown==0 && dash.amount<2){ //Allow for the cooldown of dashes to continue so that all of the dash charges can refresh
+  else if(dash.cooldown==0 && dash.amount<2){ //Allow for the cooldown of dashes to continue so that all of the dash charges can refresh
     dash.amount++
+    if(powerUpCollected){
+      dash.cooldown=1500
+    }
+    else{
     dash.cooldown=3000 
+    }
   }
   if(dash.amount==2){
     dash.cooldown=0
   }
-  if(keyIsDown(RIGHT_ARROW) && player.x+player.size < 600-dash.distance && directionFacing=="Right" && keyIsDown(32) && dash.amount>0 && spacePressed){ //Conditions for a dash to occur: the player needs to hold down an arrow key for a direction, they need to be within bounds, and the need to be pressing spacebar. The spacePressed variable ensures that holding down space bar does not cause multiple dashes to occur at once
+  if(player.x+player.size < 600-dash.distance && directionFacing=="Right" && keyIsDown(32) && dash.amount>0 && spacePressed){ //Conditions for a dash to occur: the player needs to hold down an arrow key for a direction, they need to be within bounds, and the need to be pressing spacebar. The spacePressed variable ensures that holding down space bar does not cause multiple dashes to occur at once
     player.x=player.x+dash.distance
-    dash.cooldown=3000
+        if(powerUpCollected){
+    dash.cooldown=1500
+    }
+    else{
+    dash.cooldown=3000 
+    }
     dash.amount--
     dash.active="right"
     dash.ToE=500
@@ -358,9 +383,14 @@ function dashing(){ //Dash function
       player.x=600-player.size //Ensure that the dash would not cause the player to go out of bounds
     }
   }
-  if (keyIsDown(LEFT_ARROW) && player.x>0 && directionFacing=="Left" && keyIsDown(32) && dash.amount>0 && spacePressed){ //Repeat the same dash function as the right one but this time just make it so that the dash decreases the player's x coordinate
+  if (player.x>0 && directionFacing=="Left" && keyIsDown(32) && dash.amount>0 && spacePressed){ //Repeat the same dash function as the right one but this time just make it so that the dash decreases the player's x coordinate
       player.x=player.x-dash.distance  
-    dash.cooldown=3000
+    if(powerUpCollected){
+      dash.cooldown=1500
+    }
+    else{
+    dash.cooldown=3000 
+    }
     dash.amount--
       rect(player.x,450,50,dash.distance)
     dash.active="left"
@@ -387,12 +417,51 @@ if (dash.active == "left") {
 function keyPressed(){
   spacePressed=true
 }
+function homeButton(){
+  fill(255)
+  textSize(18)
+  text("Home",525,30)
+  if(mouseIsPressed && mouseX>510 && mouseX<585 && mouseY > 10 && mouseY<35){
+    gameState="start"
+  }
+}
 function dashCollision(i){ //Make a dash collision system
   if(dash.active=="right" || dash.active=="left"){
   let dxOverlap=berries.x[i]<dash.x+dash.distance+50 && dash.x<berries.x[i]+berries.size[i]
   let dyOverlap=berries.y[i]<player.y+player.size && player.y<berries.y[i]+berries.size[i]
   return dxOverlap && dyOverlap
   }
+}
+function makePowerUp(){
+  for(let i=0;i<powerUp.amount;i++){
+  powerUp.x=(random(0,600-powerUp.size))
+  powerUp.y=(random(-70,0))
+  powerUp.img.push(rarecandy)
+  powerUp.spx=(random(-20,20))
+    powerUp.spy=(random(14,16))
+  }
+}
+function drawPowerUp(){
+  if(stage>=5 && !powerUpCollected){
+    image(powerUp.img[0],powerUp.x,powerUp.y,powerUp.size,powerUp.size)
+  if(powerUp.y-powerUp.size<height){
+  powerUp.y+=powerUp.spy
+}
+  powerUp.x+=powerUp.spx
+  if(powerUp.x+powerUp.size>width || powerUp.x<=0){
+    powerUp.spx*=-1
+  }
+  if(powerDetection()){
+    powerUpCollected=true
+    dash.amount=2
+    dash.cooldown=0
+  }
+}
+}
+function powerDetection(){
+  let xOverlap=powerUp.x<player.x+player.size && player.x+50<powerUp.x+powerUp.size
+  let yOverlap=powerUp.y<player.y+80 && player.y<powerUp.y+powerUp.size
+  return xOverlap && yOverlap
 }
 //Source for Images:
 //All artwork of berries and player characters are under the Pokemon Franchise

@@ -1,0 +1,15 @@
+🛠️ Gameplay & Mechanics
+Adjust paddle speed: Increase the moving speed of the bottom paddle so it feels more responsive. (Finished)
+Fix bouncing and collision bugs: * Investigate and fix instances where the ball/orb "phases through" blocks or asteroids without bouncing off them.(Fixed)
+Ensure that when a block is destroyed, a neighboring block doesn't accidentally disappear without being hit.(finished)
+Refine hitboxes: Precise up the hitboxes of the rectangles/blocks to make sure they match the visual assets exactly.(Finished)
+Fine-tune the win/lose conditions: Adjust the game rules or difficulty scaling so players feel there is an actual risk of losing, ensuring the game remains challenging.(FInished)
+📈 Levels & Progression
+Create a multi-level system: Add multiple distinct levels to the game rather than keeping it a single-level loop.(finished)
+Implement progressive difficulty: Design the levels to get progressively harder as the player advances.(finished)
+✨ Features & Variety
+Introduce power-ups and special items: Add unique elements to gameplay, such as different types of balls or special drops.
+🎨 Visuals & Graphics
+Upgrade image assets: Enhance the overall graphics, images, and visual design of the game blocks and background.
+Fix text/UI readability: One user rated the screen readability as a 3; double-check contrast and text sizing so everything on screen is perfectly clear(Finished)
+

@@ -9,10 +9,14 @@ let dolphinImg;
 let dolphin = {x:220, y:350, w:80, h:80, spd:7}
 let score = 0
 let bubbleNumber = 10
-let pufferNumber = 8
+let pufferNumber1 = 6
+let pufferNumber2 = 6
 let state = "start";
-let leveledUp = false;
 let speedUp = false;
+let level = 1;
+let showed10 = false;
+let showed20 = false;
+let showed35 = false;
 
 // preload images
 function preload() {
@@ -28,7 +32,7 @@ function preload() {
 function setup() {
   createCanvas(500, 550);
   makeBubbles(bubbleNumber);
-  makePufferfish(pufferNumber);
+  makePufferfish(pufferNumber1);
 }
 
 
@@ -42,7 +46,7 @@ function draw() {
   playGame()
 }
 
-if (score == 20) {
+if (score == 50) {
   state = "win";
   winGame();
 }
@@ -59,19 +63,23 @@ function mousePressed() {
   let p = dist(mouseX, mouseY, 250, 350);
   if (d < 50 && (state == "win" || state == "lose")) {
     score = 0;
+    level = 1;
     bubble = {X:[], Y:[], W:[], H:[], Speed:[]};
     puffer = {X:[], Y:[], W:[], H:[], Speed:[]};
     makeBubbles(bubbleNumber);
-    makePufferfish(pufferNumber);
+    makePufferfish(pufferNumber1);
     dolphin.x = 220;
     dolphin.y = 350;
     state = "start";
-    leveledUp = false;
   }
 
   else if (p < 50 && state == "start") {
     state = "play";
   }
+  showed10 = false;
+showed20 = false;
+showed35 = false;
+speedUp = false;
 }
 
 // design for the initial game start page
@@ -86,8 +94,10 @@ function mousePressed() {
       textSize(15);
       textStyle(NORMAL);
     textAlign(CENTER)
-      text("Reach 20 Points by Popping Bubbles and Avoiding Pufferfish!", width/2, 230);
-    text("****Use Arrow Keys to Move Up, Down, Left, and Right****", width/2, 500)
+      text("Reach 50 Points by Popping Bubbles and Avoiding Pufferfish!", width/2, 230);
+    text("****Use Arrow Keys to Move Up, Down, Left, and Right****", width/2, 490)
+    text("Bubble: +1 | Pufferfish: -3", width/2, 520)
+
   fill(0,0, 75,150);
   strokeWeight(5);
   fill(200, 220, 230);
@@ -107,22 +117,64 @@ function playGame() {
   collisionDetection();
   collisionDetectionPufferfish();
  // reset the arrays and remake the pufferfish and bubbles at a faster speed once the score is greater than 10
-  if (score >= 10 && leveledUp == false){
-    leveledUp = true;
+  if (score >= 10 && level==1){
+    level = 2;
     bubble = {X:[], Y:[], W:[], H:[], Speed:[]}
     puffer = {X:[], Y:[], W:[], H:[], Speed:[]}  
     makeBubbles(bubbleNumber);
-    makePufferfish(pufferNumber)
+    makePufferfish(pufferNumber1)
     speedUp = true;
   }
   
   // make there be text that functions as a visual indicator for the speed increase after the score initially passes 10
-    if(score>= 9 && score<=12 && speedUp == true){
+    if(score>= 10 && score<=12 && speedUp == true && showed10==false){
+      textAlign(CENTER)
+      textSize(80)
+      text("Faster!", width/2, height/2)
+    }
+
+  if(score>12){
+    showed10=true;
+  }
+  
+    if (score >= 20 && level == 2){
+    level = 3;
+    bubble = {X:[], Y:[], W:[], H:[], Speed:[]}
+    puffer = {X:[], Y:[], W:[], H:[], Speed:[]}  
+    makeBubbles(bubbleNumber);
+    makePufferfish(pufferNumber1)
+    speedUp = false;
+  }
+
+    if(score>= 20 && score<=22 && speedUp == false && showed20==false){
       textAlign(CENTER)
       textSize(80)
       text("Faster!", width/2, height/2)
     }
   
+  if(score > 22){
+  showed20 = true;
+}
+  
+      if (score >= 35 && level == 3){
+    level = 4;
+    bubble = {X:[], Y:[], W:[], H:[], Speed:[]}
+    puffer = {X:[], Y:[], W:[], H:[], Speed:[]}  
+    makeBubbles(bubbleNumber);
+    makePufferfish(pufferNumber2)
+    speedUp = false;
+  }
+  
+      if(score>= 35 && score<=37 && speedUp == false && showed35==false){
+      textAlign(CENTER)
+      textSize(80)
+      text("Faster!", width/2, height/2)
+    }
+  
+  if(score>37){
+    showed35=true
+  }
+ 
 //display the score 
   fill(255);
   textSize(25);
@@ -168,7 +220,7 @@ function loseGame() {
   ellipse(240,360,100,100);
   tint(0,0,0,150);
   image(restart,190,310,100,100);
-}
+ }
 
 // create the bubbles
 function makeBubbles(count) {
@@ -191,6 +243,22 @@ function makeBubbles(count) {
       bubble.W.push(random(90, 150));
       bubble.H.push(random(50, 85));
     }
+
+        else if (score < 35){
+      bubble.X.push(random(0,width-70));
+      bubble.Y.push(random(-400, 0));
+      bubble.Speed.push(random(4, 6));
+      bubble.W.push(random(90, 150));
+      bubble.H.push(random(50, 85));
+    }
+    
+        else if (score < 50){
+      bubble.X.push(random(0,width-70));
+      bubble.Y.push(random(-400, 0));
+      bubble.Speed.push(random(6, 7));
+      bubble.W.push(random(90, 150));
+      bubble.H.push(random(50, 85));
+    }
   }
 }
 
@@ -202,18 +270,32 @@ function makePufferfish(countPufferfish) {
     if (score < 10){
     puffer.X.push(random(0,width-70));
     puffer.Y.push(random(-400, 0));
-    puffer.Speed.push(random(1, 3));
-    puffer.W.push(random(40, 80));
-    puffer.H.push(random(50, 65));
+    puffer.Speed.push(random(2, 4));
+    puffer.W.push(random(30, 50));
+    puffer.H.push(random(30, 45));
     }
     
   // create the faster bubbles with varying widths and heights at random x and y values + speed b/w 3 and 5
   else if (score < 20){    
     puffer.X.push(random(0,width-70));
     puffer.Y.push(random(-400, 0));  
-    puffer.Speed.push(random(3, 5));
-    puffer.W.push(random(40, 80));
-    puffer.H.push(random(50, 65));
+    puffer.Speed.push(random(5,7));
+    puffer.W.push(random(30, 50));
+    puffer.H.push(random(30, 45));
+    }    
+  else if (score < 35){    
+    puffer.X.push(random(0,width-70));
+    puffer.Y.push(random(-400, 0));  
+    puffer.Speed.push(random(7, 9));
+    puffer.W.push(random(30, 50));
+    puffer.H.push(random(30, 45));
+    }    
+  else if (score < 50){    
+    puffer.X.push(random(0,width-70));
+    puffer.Y.push(random(-400, 0));  
+    puffer.Speed.push(random(9, 11));
+    puffer.W.push(random(30, 50));
+    puffer.H.push(random(30, 45));
     }    
   }
 }
@@ -226,6 +308,7 @@ function moveBubble() {
     // reset bubble to the top when it reaches the bottom
     if (bubble.Y[j] > height) {
       bubble.Y[j] = -85;
+      bubble.X[j]=random(0,width-70);
     }
     // make the bubble associated with the index
     image(bubbleImg, bubble.X[j], bubble.Y[j], bubble.W[j], bubble.H[j]);
@@ -239,6 +322,7 @@ function movePufferfish() {
   // loops through all the pufferfish made through the makePufferfish function and moves them down the screen by adding speed to their Y value
     if (puffer.Y[j] > height) {
       puffer.Y[j] = -85;
+      puffer.X[j]=random(0,width-70);
     }
     // make the pufferfish associated with the index
     image(pufferImg, puffer.X[j], puffer.Y[j], puffer.W[j], puffer.H[j]);
@@ -275,7 +359,7 @@ function collisionDetectionPufferfish() {
       dolY + dolH > puffer.Y[i]) {
       puffer.Y[i] = -85;
       puffer.X[i] = random(0,width-70);
-      score--;
+      score=score-3;
     }
   }
 }

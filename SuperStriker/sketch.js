@@ -22,6 +22,9 @@ let lives = 3; // the player starts with 3 lives
 let goaliespeed = 2;
 let level = 1; // game starts at level 1
 let shot = []; // stores the result of each shot as a goal or a miss
+let previousLevel = 1; // creates the levels which are gonna get incremented
+let levelMessageTimer = 0;
+let resettimer=0;
 function preload() {
   bg = loadImage('grass1.png')
   bghome = loadImage('homebg.png');
@@ -152,6 +155,15 @@ function drawGameScreen() {
   } else {
       fill(0,250,0);
     text("Nice shot!", width/2, 130)
+    // Level up message
+if (levelMessageTimer > 0) {
+  if (frameCount % 20 < 10) { // blink on/off every 10 frames
+    fill(255, 0, 0);
+    textSize(70);
+    text("NEXT LEVEL!", width / 2, height / 2);
+  }
+  levelMessageTimer--;
+}
 }
   }
   
@@ -200,7 +212,8 @@ function drawloseScreen(){
   textSize(20)
   text("Back", buttonBack.X+buttonBack.W/2, buttonBack.Y+buttonBack.H/2)
 }
-// loops through the shot list to find and display score and level
+// loops through the shot list to find and display s
+//core and level
 function updateScore(shotlist){
  let score = 0;
   for (let i = 0; i < shotlist.length; i++){
@@ -215,6 +228,14 @@ function updateScore(shotlist){
   text("Score: " + score, width/1.7, 50);
   text("Level: " + level, width/2.4, 50);
   text("Lives: " + lives, width-60, 50 )
+  
+  level = 1 + Math.floor(score / 5);
+
+// Check for level up
+if (level > previousLevel) {
+  levelMessageTimer = 120; // show message for about 2 seconds
+  previousLevel = level;
+}
 }
 function drawBanner(){
   fill (bannerColor)
@@ -271,7 +292,7 @@ function moveBall(){
  function resetgameball(){
    if (screen == "game"){
      if (
-       gameballpsn.Y<=220 ){
+       gameballpsn.Y<=275 ){
       
        // the following goalie check collision detection idea came from Ai but was written by myself similar to how I wrote the check mousePressed functions
        let hitGoalie = gameballpsn.X > goaliepsn.X && gameballpsn.X < goaliepsn.X + goaliepsn.W && gameballpsn.Y > goaliepsn.Y && gameballpsn.Y < goaliepsn.Y + goaliepsn.H;
